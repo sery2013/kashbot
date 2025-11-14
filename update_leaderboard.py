@@ -15,10 +15,6 @@ def is_within_last_n_days(created_at_str, days=60):
     """
     Проверяет, была ли дата создания твита (в формате ISO 8601) в течение последних N дней.
     """
-    # Проверяем, что дата не None и не пустая строка
-    if not created_at_str:
-        logging.warning(f"Твит не содержит даты создания: {created_at_str}")
-        return False
     # API возвращает дату в формате ISO 8601, например: "2025-04-01T12:34:56.000Z"
     try:
         tweet_time = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
@@ -73,8 +69,7 @@ def collect_all_tweets():
     # --- ИЗМЕНЕНИЕ: Сохраняем ТОЛЬКО твиты за последние 60 дней ---
     save_json(TWEETS_FILE, all_tweets)
     # --- КОНЕЦ ИЗМЕНЕНИЯ ---
-    logging.info(f"
-Сбор завершён. Всего твитов за последние 60 дней: {len(all_tweets)}")
+    logging.info(f"Сбор завершён. Всего твитов за последние 60 дней: {len(all_tweets)}") # <-- ИСПРАВЛЕНО
     return all_tweets
 def build_leaderboard(tweets):
     leaderboard = {}
