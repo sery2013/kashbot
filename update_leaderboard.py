@@ -7,7 +7,7 @@ import os
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 API_KEY = os.getenv("API_KEY")
-COMMUNITY_ID = "1951903018464772103"
+COMMUNITY_ID = "1902883093062574425"
 BASE_URL = f"https://api.socialdata.tools/twitter/community/{COMMUNITY_ID}/tweets"
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
@@ -104,3 +104,4 @@ if __name__ == "__main__":
     tweets = collect_all_tweets()
     build_leaderboard(tweets)
     # build_daily_stats(tweets) # Не создаём daily_posts.json, как у rialo-club
+
