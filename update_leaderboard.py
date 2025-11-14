@@ -7,7 +7,7 @@ import os
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 API_KEY = os.getenv("API_KEY")
-COMMUNITY_ID = "1902883093062574425"
+COMMUNITY_ID = "1951903018464772103"
 BASE_URL = f"https://api.socialdata.tools/twitter/community/{COMMUNITY_ID}/tweets"
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
@@ -72,38 +72,4 @@ def collect_all_tweets():
 def build_leaderboard(tweets):
     leaderboard = {}
 
-    for t in tweets: # Обрабатываем все твиты из all_tweets.json (как на rialo-club-leaderboard.xyz)
-        user = t.get("user")
-        if not user:
-            continue
-        name = user.get("screen_name")
-        if not name:
-            continue
-
-        stats = leaderboard.setdefault(name, {
-            "posts": 0,
-            "likes": 0,
-            "retweets": 0,
-            "comments": 0,
-            "quotes": 0,
-            "views": 0
-        })
-
-        stats["posts"] += 1
-        stats["likes"] += t.get("favorite_count", 0)
-        stats["retweets"] += t.get("retweet_count", 0)
-        stats["comments"] += t.get("reply_count", 0)
-        stats["quotes"] += t.get("quote_count", 0)
-        stats["views"] += t.get("views_count", 0)
-
-    leaderboard_list = [[user, stats] for user, stats in leaderboard.items()]
-    save_json(LEADERBOARD_FILE, leaderboard_list)
-    logging.info(f"🏆 Лидерборд обновлён ({len(leaderboard_list)} участников).")
-
-# Эта функция НЕ создает daily_posts.json, как раньше
-# График будет строиться в script.js из all_tweets.json (как на rialo-club-leaderboard.xyz)
-
-if __name__ == "__main__":
-    tweets = collect_all_tweets()
-    build_leaderboard(tweets)
-    # build_daily_stats(tweets) # Закомментировано, как у rialo-club
+    for t in tweets: # Обрабатываем все твиты из all_tweets.json (как на
