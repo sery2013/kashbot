@@ -4,17 +4,25 @@ import time
 import logging
 import os
 from datetime import datetime, timedelta, timezone # Импортируем для работы с датами
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+
 API_KEY = os.getenv("API_KEY")
 COMMUNITY_ID = "1951903018464772103"
 BASE_URL = f"https://api.socialdata.tools/twitter/community/{COMMUNITY_ID}/tweets"
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
 TWEETS_FILE = "all_tweets.json"
 LEADERBOARD_FILE = "leaderboard.json"
+
 def is_within_last_n_days(created_at_str, days=60):
     """
     Проверяет, была ли дата создания твита (в формате ISO 8601) в течение последних N дней.
     """
+    # Проверяем, что дата не None и не пустая строка
+    if not created_at_str:
+        logging.warning(f"Твит не содержит даты создания: {created_at_str}")
+        return False
     # API возвращает дату в формате ISO 8601, например: "2025-04-01T12:34:56.000Z"
     try:
         tweet_time = datetime.fromisoformat(created_at_str.replace("Z", "+00:00"))
@@ -26,15 +34,18 @@ def is_within_last_n_days(created_at_str, days=60):
     n_days_ago = now - timedelta(days=days)
     # Сравниваем timestamp
     return tweet_time >= n_days_ago
+
 def load_json(path):
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         return []
+
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
 def fetch_tweets(cursor=None, limit=50):
     params = {"type": "Latest", "limit": limit}
     if cursor:
@@ -42,6 +53,7 @@ def fetch_tweets(cursor=None, limit=50):
     r = requests.get(BASE_URL, headers=HEADERS, params=params)
     r.raise_for_status()
     return r.json()
+
 def collect_all_tweets():
     all_tweets = []
     seen_ids = set()
@@ -66,11 +78,13 @@ def collect_all_tweets():
         if not cursor:
             break
         time.sleep(3)
+
     # --- ИЗМЕНЕНИЕ: Сохраняем ТОЛЬКО твиты за последние 60 дней ---
     save_json(TWEETS_FILE, all_tweets)
     # --- КОНЕЦ ИЗМЕНЕНИЯ ---
-    logging.info(f"Сбор завершён. Всего твитов за последние 60 дней: {len(all_tweets)}") # <-- ИСПРАВЛЕНО
+    logging.info(f"Сбор завершён. Всего твитов за последние 60 дней: {len(all_tweets)}")
     return all_tweets
+
 def build_leaderboard(tweets):
     leaderboard = {}
     for t in tweets: # Обрабатываем только твиты, переданные в функцию (т.е. за последние 60 дней)
@@ -97,6 +111,7 @@ def build_leaderboard(tweets):
     leaderboard_list = [[user, stats] for user, stats in leaderboard.items()]
     save_json(LEADERBOARD_FILE, leaderboard_list)
     logging.info(f"🏆 Лидерборд обновлён ({len(leaderboard_list)} участников за последние 60 дней).")
+
 # --- НОВЫЙ БЛОК: СОЗДАНИЕ ДАННЫХ ДЛЯ ГРАФИКА ---
 def build_daily_stats(tweets):
     """
@@ -120,6 +135,7 @@ def build_daily_stats(tweets):
     # Сохраняем в файл
     save_json("daily_posts.json", daily_list)
     logging.info(f"📊 График активности обновлён ({len(daily_list)} дней за последние 60 дней).")
+
 if __name__ == "__main__":
     tweets = collect_all_tweets()
     build_leaderboard(tweets)
