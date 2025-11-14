@@ -7,6 +7,7 @@ let sortOrder = "desc";
 let currentPage = 1;
 const perPage = 15;
 let timeFilter = "all";
+let analyticsChart = null; // Для хранения экземпляра Chart.js
 
 // --- Fetch leaderboard data ---
 async function fetchData() {
@@ -56,37 +57,49 @@ async function fetchDailyPosts() {
     renderChart(json);
   } catch (err) {
     console.error('Failed to fetch daily posts data:', err);
-    document.getElementById('activityChart').parentNode.innerHTML = '<p style="color: red;">Не удалось загрузить данные для графика.</p>';
+    // Опционально: обновить содержимое chart-section, чтобы показать ошибку
+    const chartSection = document.getElementById('analytics-chart');
+    if (chartSection) {
+        chartSection.parentNode.innerHTML = '<p style="color: red; text-align: center;">Failed to load chart data.</p>';
+    }
   }
 }
 
 // --- Render Chart ---
 function renderChart(dailyData) {
-    const ctx = document.getElementById('activityChart').getContext('2d');
+    const ctx = document.getElementById('analytics-chart').getContext('2d');
+
+    // Уничтожаем предыдущий экземпляр Chart, если он существует
+    if (analyticsChart) {
+        analyticsChart.destroy();
+    }
+
     const labels = dailyData.map(item => item.date);
     const posts = dailyData.map(item => item.posts);
-    new Chart(ctx, {
+
+    analyticsChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Посты за день',
+                label: 'Posts per day',
                 data: posts,
-                backgroundColor: 'rgba(75, 200, 160, 0.8)',
+                backgroundColor: 'rgba(75, 200, 160, 0.8)', // Цвет бара, можно изменить
                 borderColor: 'rgba(75, 200, 160, 1)',
                 borderWidth: 1
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false, // Позволяет canvas занимать всю высоту контейнера
             plugins: {
                 legend: {
-                    display: false
+                    display: false // Скрыть легенду
                 },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return `Постов: ${context.raw}`;
+                            return `Posts: ${context.raw}`;
                         }
                     }
                 }
@@ -96,17 +109,17 @@ function renderChart(dailyData) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Количество постов'
+                        text: 'Number of Posts'
                     }
                 },
                 x: {
                     title: {
                         display: true,
-                        text: 'Дата'
+                        text: 'Date'
                     },
-                    maxTicksLimit: 15,
+                    maxTicksLimit: 15, // Ограничивает количество подписей по оси X
                     ticks: {
-                        autoSkip: true,
+                        autoSkip: true, // Автоматически пропускать метки, если их слишком много
                         maxRotation: 45,
                         minRotation: 45
                     }
@@ -115,6 +128,7 @@ function renderChart(dailyData) {
         }
     });
 }
+
 
 // стартовые загрузки
 fetchTweets().then(() => fetchData()).then(() => fetchDailyPosts()); // Добавляем загрузку данных для графика
@@ -229,7 +243,7 @@ function renderTable() {
   document.getElementById("page-info").textContent = `Page ${currentPage} / ${totalPages}`;
   // Добавляем обработчики клика
   addUserClickHandlers();
-}
+});
 
 function escapeHtml(str) {
   return String(str).replace(/&/g, "&amp;").replace(/</g, "<").replace(/>/g, ">");
@@ -309,7 +323,7 @@ function toggleTweetsRow(tr, username) {
     return candidate.replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
   });
   if (userTweets.length === 0) {
-    td.innerHTML = "<i style='color:#aaa;'>У пользователя нет постов</i>";
+    td.innerHTML = "<i style='color:#aaa;'>User has no posts</i>";
   } else {
     const container = document.createElement("div");
     container.classList.add("tweet-container");
