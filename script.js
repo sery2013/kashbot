@@ -113,13 +113,13 @@ function renderAnalyticsChart() {
 
     analyticsChart = new Chart(ctx, {
         type: 'bar',
-        data: {
+         {
             labels: labels,
             datasets: [{
                 label: 'Tweets per day',
                 backgroundColor: 'rgba(75, 200, 160, 0.8)', // Можно изменить цвет
                 borderColor: 'rgba(75, 200, 160, 1)',
-                data: counts
+                 counts
             }]
         },
         options: {
