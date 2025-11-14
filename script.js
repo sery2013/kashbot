@@ -1,7 +1,7 @@
 // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-let rawData = [];
-let data = [];
-let allTweets = [];
+let rawData = []; // Хранит нефильтрованные данные из leaderboard.json
+let data = [];    // Хранит отфильтрованные данные для отображения
+let allTweets = []; // Хранит все твиты из all_tweets.json (для фильтрации и графика)
 let sortKey = "posts";
 let sortOrder = "desc";
 let currentPage = 1;
@@ -14,8 +14,9 @@ async function fetchData() {
   try {
     const response = await fetch("leaderboard.json");
     const json = await response.json();
-    rawData = json;
-    normalizeData(rawData);
+    rawData = json; // Сохраняем raw данные
+    // Обновляем отображение, используя allTweets для фильтрации
+    normalizeDataFromTweets();
     sortData();
     renderTable();
     updateArrows();
@@ -25,7 +26,7 @@ async function fetchData() {
   }
 }
 
-// --- Fetch all tweets ---
+// --- Fetch all tweets (для фильтрации и графика) ---
 async function fetchTweets() {
   try {
     const response = await fetch("all_tweets.json");
@@ -43,30 +44,22 @@ async function fetchTweets() {
     } else {
       allTweets = [];
     }
+    // После загрузки твитов, обновляем отображение
+    normalizeDataFromTweets();
+    sortData();
+    renderTable();
+    updateArrows();
+    updateTotals();
+    // И строим график
+    renderAnalyticsChart();
   } catch (err) {
     console.error("Failed to fetch all tweets:", err);
     allTweets = [];
   }
 }
 
-// --- Fetch daily posts data for chart ---
-async function fetchDailyPosts() {
-  try {
-    const response = await fetch('daily_posts.json');
-    const json = await response.json();
-    renderChart(json);
-  } catch (err) {
-    console.error('Failed to fetch daily posts data:', err);
-    // Опционально: обновить содержимое chart-section, чтобы показать ошибку
-    const chartSection = document.getElementById('analytics-chart');
-    if (chartSection) {
-        chartSection.parentNode.innerHTML = '<p style="color: red; text-align: center;">Failed to load chart data.</p>';
-    }
-  }
-}
-
-// --- Render Chart ---
-function renderChart(dailyData) {
+// --- Render Chart (аналогично rialo-club-leaderboard.xyz) ---
+function renderAnalyticsChart() {
     const ctx = document.getElementById('analytics-chart').getContext('2d');
 
     // Уничтожаем предыдущий экземпляр Chart, если он существует
@@ -74,19 +67,59 @@ function renderChart(dailyData) {
         analyticsChart.destroy();
     }
 
-    const labels = dailyData.map(item => item.date);
-    const posts = dailyData.map(item => item.posts);
+    // Подготовим данные для графика на основе allTweets
+    // Фильтруем по выбранному периоду (аналогично фильтрации таблицы)
+    const now = new Date();
+    const period = document.getElementById('time-select').value; // Используем текущий фильтр времени
+    let tweetsForChart = allTweets;
+
+    if (period !== 'all') {
+        const days = Number(period);
+        if (days > 0) {
+            tweetsForChart = allTweets.filter(t => {
+                const created = t.tweet_created_at || t.created_at || t.created || null;
+                if (!created) return false;
+                const d = new Date(created);
+                if (isNaN(d)) return false;
+                const diffDays = (now - d) / (1000 * 60 * 60 * 24);
+                return diffDays <= days;
+            });
+        }
+    }
+
+    // Собираем статистику по дням (как в renderAnalytics на rialo-club)
+    const perDay = {}; // key YYYY-MM-DD -> count
+    tweetsForChart.forEach(t => {
+        const created = t.tweet_created_at || t.created_at || t.created || null;
+        if (!created) return;
+        const d = new Date(created);
+        if (isNaN(d)) return;
+        const key = d.toISOString().slice(0,10); // Формат YYYY-MM-DD
+        perDay[key] = (perDay[key] || 0) + 1;
+    });
+
+    // Подготовим метки и данные для Chart.js
+    // Используем диапазон от выбранного периода
+    const chartDays = period === 'all' ? 60 : (period === '7' ? 7 : (period === '14' ? 14 : (period === '30' ? 30 : 60)));
+    const labels = [];
+    const counts = [];
+    for (let i = chartDays - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const key = d.toISOString().slice(0,10);
+        labels.push(key);
+        counts.push(perDay[key] || 0);
+    }
 
     analyticsChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Posts per day',
-                data: posts,
-                backgroundColor: 'rgba(75, 200, 160, 0.8)', // Цвет бара, можно изменить
+                label: 'Tweets per day',
+                backgroundColor: 'rgba(75, 200, 160, 0.8)', // Можно изменить цвет
                 borderColor: 'rgba(75, 200, 160, 1)',
-                borderWidth: 1
+                data: counts
             }]
         },
         options: {
@@ -131,72 +164,65 @@ function renderChart(dailyData) {
 
 
 // стартовые загрузки
-fetchTweets().then(() => fetchData()).then(() => fetchDailyPosts()); // Добавляем загрузку данных для графика
+fetchTweets().then(() => fetchData()); // Сначала загружаем твиты, потом leaderboard
 setInterval(() => {
-  fetchTweets();
-  fetchData();
-  fetchDailyPosts(); // Обновляем график тоже
+  fetchTweets(); // Обновляем твиты, leaderboard и график
+  fetchData();   // fetchData вызывает renderAnalyticsChart внутри себя
 }, 3600000); // обновлять каждый час
 
-// --- Normalize leaderboard data ---
-function normalizeData(json) {
-  data = [];
-  if (Array.isArray(json) && json.length > 0 && !Array.isArray(json[0])) {
-    data = json.map(item => extractBaseStatsFromItem(item));
-  } else if (Array.isArray(json) && json.length > 0 && Array.isArray(json[0])) {
-    data = json.map(([name, stats]) => {
-      const base = extractBaseStatsFromItem(stats || {});
-      base.username = name || base.username || "";
-      return applyTimeFilterIfNeeded(base);
-    });
-  } else if (json && typeof json === "object") {
-    data = Object.entries(json).map(([name, stats]) => {
-      const base = extractBaseStatsFromItem(stats || {});
-      base.username = name || base.username || "";
-      return applyTimeFilterIfNeeded(base);
-    });
-  }
-  data = data.map(d => applyTimeFilterIfNeeded(d));
-  function extractBaseStatsFromItem(item) {
-    const username = item.username || item.user || item.name || item.screen_name || "";
-    const posts = Number(item.posts || item.tweets || 0);
-    const likes = Number(item.likes || item.favorite_count || 0);
-    const retweets = Number(item.retweets || item.retweet_count || 0);
-    const comments = Number(item.comments || item.reply_count || 0);
-    const views = Number(item.views || item.views_count || 0);
-    return { username, posts, likes, retweets, comments, views };
-  }
-  function applyTimeFilterIfNeeded(base) {
-    if (!base || !base.username) return base;
-    if (timeFilter === "all") return base;
-    const days = Number(timeFilter);
-    if (!days || days <= 0) return base;
+// --- Normalize leaderboard data based on allTweets (аналогично rialo-club-leaderboard.xyz) ---
+function normalizeDataFromTweets() {
+    // Очищаем текущую data
+    data = [];
+
+    // Используем allTweets для пересчёта статистики
     const now = new Date();
-    const uname = String(base.username).toLowerCase().replace(/^@/, "");
-    const userTweets = allTweets.filter(t => {
-      const candidate = (t.user && (t.user.screen_name || t.user.name)) || "";
-      return String(candidate).toLowerCase().replace(/^@/, "") === uname;
+    const period = timeFilter;
+    let filteredTweets = allTweets;
+
+    // Фильтруем твиты по времени
+    if (period !== 'all') {
+        const days = Number(period);
+        if (days > 0) {
+            filteredTweets = allTweets.filter(t => {
+                const created = t.tweet_created_at || t.created_at || t.created || null;
+                if (!created) return false;
+                const d = new Date(created);
+                if (isNaN(d)) return false;
+                const diffDays = (now - d) / (1000 * 60 * 60 * 24);
+                return diffDays <= days;
+            });
+        }
+    }
+
+    // Собираем агрегированные данные по пользователям из отфильтрованных твитов
+    const userStats = {};
+    filteredTweets.forEach(t => {
+        const u = (t.user && (t.user.screen_name || t.user.name)) || t.username || "";
+        const uname = String(u).toLowerCase().replace(/^@/, "");
+        if (!uname) return;
+        const likes = Number(t.favorite_count || t.likes || t.like_count || 0) || 0;
+        const views = Number(t.views_count || t.views || 0) || 0;
+        if (!userStats[uname]) userStats[uname] = { posts: 0, likes: 0, views: 0, retweets: 0, comments: 0 };
+        userStats[uname].posts += 1;
+        userStats[uname].likes += likes;
+        userStats[uname].views += views;
+        userStats[uname].retweets += Number(t.retweet_count || 0) || 0;
+        userStats[uname].comments += Number(t.reply_count || 0) || 0;
     });
-    let posts = 0, likes = 0, retweets = 0, comments = 0, views = 0;
-    userTweets.forEach(tweet => {
-      const created = tweet.tweet_created_at || tweet.created_at || tweet.created || null;
-      if (!created) return;
-      const tweetDate = new Date(created);
-      if (isNaN(tweetDate)) return;
-      const diffDays = (now - tweetDate) / (1000 * 60 * 60 * 24);
-      if (diffDays <= days) {
-        posts += 1;
-        likes += Number(tweet.favorite_count || 0);
-        retweets += Number(tweet.retweet_count || 0);
-        comments += Number(tweet.reply_count || 0);
-        views += Number(tweet.views_count || 0);
-      }
-    });
-    return { username: base.username, posts, likes, retweets, comments, views };
-  }
+
+    // Преобразуем в формат, подходящий для таблицы (массив объектов)
+    data = Object.entries(userStats).map(([name, stats]) => ({
+        username: name,
+        posts: stats.posts,
+        likes: stats.likes,
+        retweets: stats.retweets,
+        comments: stats.comments,
+        views: stats.views
+    }));
 }
 
-// --- Update totals ---
+// --- Update totals based on current data ---
 function updateTotals() {
   const totalPosts = data.reduce((sum, s) => sum + (Number(s.posts) || 0), 0);
   const totalViews = data.reduce((sum, s) => sum + (Number(s.views) || 0), 0);
@@ -243,7 +269,7 @@ function renderTable() {
   document.getElementById("page-info").textContent = `Page ${currentPage} / ${totalPages}`;
   // Добавляем обработчики клика
   addUserClickHandlers();
-});
+}
 
 function escapeHtml(str) {
   return String(str).replace(/&/g, "&amp;").replace(/</g, "<").replace(/>/g, ">");
@@ -284,14 +310,19 @@ document.getElementById("search").addEventListener("input", () => { currentPage 
   if(el) el.addEventListener("click", () => updateSort(key));
 });
 
-// --- Time filter ---
+// --- Time filter (новая логика: пересчитывает данные на основе allTweets) ---
 document.getElementById("time-select").addEventListener("change", e => {
   timeFilter = e.target.value || "all";
   currentPage = 1;
-  normalizeData(rawData);
+  // Пересчитываем данные на основе allTweets и выбранного фильтра
+  normalizeDataFromTweets();
   sortData();
   renderTable();
   updateTotals();
+  // Обновляем график
+  if (analyticsChart) {
+      renderAnalyticsChart(); // Перестраиваем график с новым фильтром
+  }
 });
 
 // --- Добавляем обработчики клика на строки таблицы после рендера ---
@@ -309,24 +340,31 @@ function toggleTweetsRow(tr, username) {
   const nextRow = tr.nextElementSibling;
   const isAlreadyOpen = nextRow && nextRow.classList.contains("tweets-row") &&
                         nextRow.dataset.username === username;
+
   document.querySelectorAll(".tweets-row").forEach(row => row.remove());
   document.querySelectorAll("tbody tr").forEach(row => row.classList.remove("active-row"));
+
   if (isAlreadyOpen) return;
+
   tr.classList.add("active-row");
+
   const tweetsRow = document.createElement("tr");
   tweetsRow.classList.add("tweets-row");
   tweetsRow.dataset.username = username;
   const td = document.createElement("td");
   td.colSpan = 6;
+
   const userTweets = allTweets.filter(tweet => {
     const candidate = (tweet.user?.screen_name || tweet.user?.name || "").toLowerCase();
     return candidate.replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
   });
+
   if (userTweets.length === 0) {
     td.innerHTML = "<i style='color:#aaa;'>User has no posts</i>";
   } else {
     const container = document.createElement("div");
     container.classList.add("tweet-container");
+
     userTweets.forEach(tweet => {
       const content = tweet.full_text || tweet.text || tweet.content || "";
       const url = tweet.url || (tweet.id_str ? `https://twitter.com/${username}/status/${tweet.id_str}` : "#");
