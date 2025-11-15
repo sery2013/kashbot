@@ -29,16 +29,16 @@
           cursor: pointer; /* Курсор указывает на возможность клика */
         }
 
-        /* === WELCOME SECTION (стилизована как цитата) === */
+        /* === WELCOME SECTION (стилизована как прозрачная цитата, текст по центру) === */
         .welcome-section {
           /* Основные стили */
-          text-align: left; /* Выравнивание текста по левому краю */
-          margin: 20px auto 30px auto; /* Внешние отступы: верх, гориз. центрирование, низ */
+          text-align: center; /* Центрирование текста */
+          margin: 20px auto 10px auto; /* Внешние отступы: верх, гориз. центрирование, низ (уменьшено для размещения .team-box ниже) */
           padding: 25px 30px; /* Внутренние отступы */
           max-width: 800px; /* Максимальная ширина */
 
           /* Стили рамки-цитаты */
-          background-color: #f9f9f9; /* Светлый фон */
+          background-color: rgba(255, 255, 255, 0.8); /* Полупрозрачный белый фон */
           border-left: 5px solid #2F4F4F; /* Цвет левой границы #2F4F4F */
           border-radius: 0 5px 5px 0; /* Скругление правых углов */
           box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Тень */
@@ -94,14 +94,25 @@
           color: #0052a3; /* Цвет ссылки при наведении */
         }
 
-        /* Стили для .team-box внутри .welcome-section (если нужно изменить) */
-        .welcome-section .team-box {
-          margin-top: 15px; /* Отступ сверху для .team-box */
+        /* Стили для .team-box (вынесен за пределы .welcome-section) */
+        .team-box {
+          margin: 10px auto; /* Отступ сверху и снизу, центрирование по горизонтали */
           padding: 10px 15px; /* Внутренние отступы */
-          background-color: rgba(47, 79, 79, 0.1); /* Лёгкий фон */
+          background-color: #2F4F4F; /* Цвет фона */
           border-radius: 5px; /* Скругление углов */
-          border: 1px solid rgba(47, 79, 79, 0.2); /* Лёгкая граница */
           text-align: center; /* Центрирование текста */
+          color: #fff; /* Белый цвет текста */
+          display: inline-block; /* Чтобы ширина была по контенту */
+        }
+
+        /* Стили для ссылки внутри .team-box */
+        .team-box a {
+          color: #fff; /* Белый цвет ссылки */
+          text-decoration: underline; /* Подчеркивание */
+        }
+
+        .team-box a:hover {
+          color: #a9ddd3; /* Цвет ссылки при наведении */
         }
     </style>
 </head>
@@ -125,10 +136,11 @@
             <p>By clicking on any metric (for example, views), you can filter by it.</p>
             <p><b><span style="color:#90EE90;">Updated every 2 days</span></b></p>
             <p>Support us on Twitter!</p>
+        </div>
 
-            <div class="team-box">
-                <p>Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a></p>
-                            </div>
+        <!-- Блок "Follow Developer" вынесен ниже и не входит в .welcome-section -->
+        <div class="team-box">
+            <p>Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a></p>
         </div>
 
         <!-- Tabs (перемещены под .team-box) -->
