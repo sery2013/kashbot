@@ -356,7 +356,7 @@ tbody tr:hover {
   border-top: 2px solid rgba(255, 255, 255, 0.3); /* изменена обводка */
   padding: 25px;
   animation: fadeInAccordion 0.4s ease;
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   color: #fff; /* белый цвет текста */
   position: relative;
   overflow: hidden;
@@ -401,7 +401,7 @@ tbody tr:hover {
 .tweet-card {
   background: linear-gradient(135deg, #2F4F4F, #1a2a2a); /* градиент с цветом #2F4F4F */
   border: 2px solid rgba(255, 255, 255, 0.3); /* изменена обводка */
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.15); /* изменена тень */
   width: 445px;
   color: #fff; /* белый цвет текста */
@@ -448,7 +448,7 @@ tbody tr:hover {
 /* Изображение внутри твита */
 .tweet-card img {
   width: 100%;
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   margin-top: 10px;
   object-fit: cover;
 }
@@ -514,7 +514,7 @@ tr.active-row:hover {
 .track-cover {
   width: 150px;
   height: 150px;
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   object-fit: cover;
 }
 
@@ -567,7 +567,7 @@ tr.active-row:hover {
 }
 .tab-btn {
   padding: 8px 14px;
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   border: 2px solid rgba(255,255,255,0.25); /* изменена обводка */
   background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); /* изменен фон */
   color: #fff; /* белый цвет текста */
@@ -613,7 +613,7 @@ tr.active-row:hover {
 .analytics-block { 
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   padding: 12px; 
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   margin-bottom: 12px; 
   position: relative;
   overflow: hidden;
@@ -645,7 +645,7 @@ tr.active-row:hover {
 .analytics-block ol { padding-left: 18px; }
 .top-post-item { 
   padding:8px 10px; 
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   margin-bottom:8px; 
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   display:flex; 
@@ -681,7 +681,7 @@ tr.active-row:hover {
   --card-bg: #2F4F4F; /* изменен цвет card-bg - сплошной цвет #2F4F4F */
   --glass: #2F4F4F; /* изменен цвет glass - сплошной цвет #2F4F4F */
   --glass-strong: #2F4F4F; /* изменен цвет glass-strong - сплошной цвет #2F4F4F */
-  --radius: 7.5%; /* изменен радиус */
+  --radius: 5%; /* изменен радиус */
 }
 
 .container { max-width:1100px; margin: 140px auto 60px; padding: 28px; }
@@ -693,7 +693,7 @@ tr.active-row:hover {
   border: 1px solid rgba(255,255,255,0.08); /* изменена обводка */
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   padding:18px; 
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   color: #fff; /* гарантирован белый цвет текста */
 }
 
@@ -701,7 +701,7 @@ tr.active-row:hover {
   width: 220px; 
   padding:14px; 
   text-align:center; 
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   box-shadow: inset 0 -2px 6px rgba(0,0,0,0.2); 
   position: relative;
@@ -740,7 +740,7 @@ tr.active-row:hover {
   justify-content:space-between; 
   align-items:center; 
   padding:10px; 
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   margin-bottom:8px; 
   border:1px solid rgba(255,255,255,0.02); 
@@ -769,7 +769,7 @@ tr.active-row:hover {
   gap:12px; 
   align-items:center; 
   padding:12px; 
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   border:1px solid rgba(255,255,255,0.02); 
   position: relative;
@@ -800,7 +800,7 @@ tr.active-row:hover {
   background: #2F4F4F !important; /* изменен фон метрики - сплошной цвет #2F4F4F */
   color:#fff !important; /* гарантирован белый цвет текста */
   padding:6px 8px; 
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   font-weight:700; 
 }
 
@@ -858,7 +858,7 @@ select {
   background-position: right 8px center;
   background-size: 16px;
   padding-right: 32px;
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
 }
 
 /* period filter styling */
@@ -866,7 +866,7 @@ select {
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   border: 1px solid rgba(255,255,255, 0.15) !important; /* изменена обводка */
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   position: relative;
   overflow: hidden;
   color: #fff; /* гарантирован белый цвет текста */
@@ -892,7 +892,7 @@ select {
   color: #fff !important; /* гарантирован белый цвет текста */
   font-weight: 600;
   padding: 10px 32px 10px 12px;
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   transition: all 200ms ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
@@ -923,7 +923,7 @@ select {
   color: #fff !important; /* гарантирован белый цвет текста */
   font-weight: 600;
   padding: 10px 12px;
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   cursor: pointer;
   transition: all 180ms ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -949,7 +949,7 @@ select option {
   color: #fff !important; /* белый цвет текста */
   padding: 8px;
   border: none;
-  border-radius: 7.5%; /* скругление 5-10% для опций */
+  border-radius: 5%; /* скругление 5-10% для опций */
 }
 
 select option:hover {
@@ -960,7 +960,7 @@ select option:hover {
 select option:checked {
   background: #fff !important; /* изменен фон выбранной опции */
   color: #2F4F4F !important; /* изменен цвет текста */
-  border-radius: 7.5%; /* скругление 5-10% для выбранной опции */
+  border-radius: 5%; /* скругление 5-10% для выбранной опции */
 }
 
 /* === Nested analytics tabs === */
@@ -979,7 +979,7 @@ select option:checked {
   cursor:pointer; 
   border-bottom:3px solid transparent; 
   transition: all 200ms ease; 
-  border-radius: 7.5% 7.5% 0 0; /* скругление только сверху для вкладок */
+  border-radius: 5% 5% 0 0; /* скругление только сверху для вкладок */
 }
 .analytics-tab-btn:hover { 
   color:#fff !important; /* белый цвет текста */
@@ -993,7 +993,7 @@ select option:checked {
   animation: fadeIn 250ms ease; 
   background: #2F4F4F !important; /* изменен фон - сплошной цвет #2F4F4F */
   color: #fff !important; /* гарантирован белый цвет текста */
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   padding: 10px; /* добавлен внутренний отступ */
   border: 1px solid rgba(255, 255, 255, 0.05); /* добавлена тонкая граница */
 }
@@ -1015,7 +1015,7 @@ select option:checked {
   padding: 20px;
   background: linear-gradient(135deg, #2F4F4F, #1a2a2a); /* градиент с цветом #2F4F4F */
   border: 2px solid rgba(255, 255, 255, 0.4); /* изменена обводка */
-  border-radius: 7.5%; /* скругление 5-10% */
+  border-radius: 5%; /* скругление 5-10% */
   text-align: center;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); /* изменена тень */
   transition: all 0.3s ease;
@@ -1094,4 +1094,5 @@ select option:checked {
   /* Курсор указывает на возможность клика */
   cursor: pointer;
 }
+
 
