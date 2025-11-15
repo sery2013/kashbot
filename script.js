@@ -385,21 +385,26 @@ if (nextBtn) {
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      // 1. Обновляем активную вкладку
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      const tab = btn.dataset.tab;
-      const lb = document.getElementById('leaderboard-wrapper');
-      const an = document.getElementById('tab-analytics');
-      if (tab === 'analytics') {
-        if (lb) lb.style.display = 'none';
-        if (an) an.style.display = 'block';
+      
+      // 2. Получаем ID целевой вкладки
+      const tabId = btn.dataset.tab;
+      
+      // 3. Скрываем все контентные блоки
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // 4. Показываем нужный контентный блок
+      const targetContent = document.getElementById(`${tabId}-wrapper`) || document.getElementById(`tab-${tabId}`);
+      if (targetContent) {
+        targetContent.classList.add('active');
         // Вызываем рендер аналитики при активации вкладки
-        if (typeof renderAnalytics === "function") {
+        if (tabId === 'analytics' && typeof renderAnalytics === "function") {
             renderAnalytics();
         }
-      } else { // tab === 'leaderboard'
-        if (lb) lb.style.display = 'block';
-        if (an) an.style.display = 'none';
       }
     });
   });
