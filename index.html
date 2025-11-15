@@ -1,3 +1,12 @@
+Хорошо, вот ваш обновлённый `index.html` с добавленным **фильтром по часам** для тепловой карты.
+
+**Что добавлено:**
+
+1.  Новый выпадающий список (`<select>`) с `id="hour-select"` рядом с существующим фильтром времени в разделе Analytics.
+2.  Этот `select` позволяет выбрать конкретный час (00:00 - 23:00) или "All hours".
+3.  Выбранный час будет влиять на отображение тепловой карты и на данные, доступные для экспорта.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,93 +18,36 @@
         /* === CENTERED BANNER (1350×100, по центру, кликабельный, просто обновляет страницу) === */
         .centered-banner {
           width: 100%;
-          height: 100px;
+          height: 100px; /* высота 100px */
           position: sticky;
           top: 0;
-          z-index: 1000;
+          z-index: 1000; /* Высокий z-index, чтобы баннер был поверх других элементов */
           display: flex;
-          justify-content: center;
-          align-items: center;
-          background: #0d1117;
+          justify-content: center; /* центрирует содержимое по горизонтали */
+          align-items: center;     /* центрирует содержимое по вертикали */
+          background: #0d1117; /* фон, если изображение не загрузится */
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .banner-link {
           display: block;
-          width: 1350px;
-          height: 100px;
-          background: url("https://i.yapx.ru/cInFv.png") no-repeat center center;
-          background-size: 1350px 100px;
-          cursor: pointer;
-        }
-
-        /* === LANGUAGE SWITCHER (в правом верхнем углу) === */
-        .lang-switcher {
-          position: absolute;
-          top: 10px;
-          right: 20px;
-          z-index: 1001;
-          display: flex;
-          gap: 4px;
-          background: rgba(0,0,0,0.3);
-          border-radius: 12px;
-          padding: 4px 8px;
-          font-size: 0.85rem;
-          color: #fff;
-          border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .lang-switcher button {
-          background: transparent;
-          border: none;
-          color: #fff;
-          cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 8px;
-          transition: all 0.2s ease;
-        }
-
-        .lang-switcher button:hover {
-          background: rgba(255,255,255,0.1);
-        }
-
-        .lang-switcher button.active {
-          background: rgba(255,255,255,0.2);
-          font-weight: 600;
-        }
-
-        /* === MANUAL UPDATE BUTTON === */
-        .update-btn {
-          margin-left: 15px;
-          padding: 6px 12px;
-          font-size: 0.85rem;
-          border-radius: 5%;
-          border: 1px solid rgba(255,255,255,0.2);
-          background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-          color: #fff;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .update-btn:hover {
-          background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-          border-color: rgba(255,255,255,0.4);
-          transform: translateY(-1px);
+          width: 1350px;   /* фиксированная ширина изображения */
+          height: 100px;   /* фиксированная высота */
+          background: url("https://i.yapx.ru/cInFv.png") no-repeat center center; /* <-- ССЫЛКА НА ИЗОБРАЖЕНИЕ БАННЕРА */
+          background-size: 1350px 100px; /* точный размер изображения */
+          cursor: pointer; /* Курсор указывает на возможность клика */
         }
     </style>
 </head>
 <body>
-    <!-- === BANNER === -->
+    <!-- === BANNER (теперь просто обновляет страницу) === -->
     <div class="centered-banner">
         <a href="javascript:location.reload()" class="banner-link"></a>
-        <!-- LANGUAGE SWITCHER -->
-        <div class="lang-switcher">
-            <button id="lang-en" class="active">EN</button>
-            <button id="lang-ru">RU</button>
-        </div>
     </div>
 
     <div class="background"></div>
+
+    <!-- УБРАН: <div class="header-fixed"> <h1>Ritual Community</h1> </div> -->
 
     <div class="container">
         <!-- === WELCOME SECTION === -->
@@ -106,21 +58,20 @@
             <p>By clicking on any participant, you can view their works directly on the website.</p>
             <p>By clicking on any metric (for example, views), you can filter by it.</p>
             <p><b><span style="color:#90EE90;">Updated every 2 days</span></b></p>
-            <p><span id="last-updated" style="color: #a9ddd3; font-size: 0.9rem;">Last updated: —</span></p>
             <p>Support us on Twitter!</p>
 
             <div class="team-box">
-                <p>Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a></p>
-            </div>
+                <p>Follow Twitter Dev - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a></p>
+                            </div>
         </div>
 
-        <!-- Tabs -->
+        <!-- Tabs (перемещены под .team-box) -->
         <div class="tabs">
             <button class="tab-btn active" data-tab="leaderboard">Leaderboard</button>
             <button class="tab-btn" data-tab="analytics">Analytics</button>
         </div>
 
-        <!-- Leaderboard Wrapper -->
+        <!-- wrapper for leaderboard content so we can toggle visibility -->
         <div id="leaderboard-wrapper" class="tab-content active">
             
             <!-- Общая статистика -->
@@ -135,7 +86,7 @@
                 <input type="text" id="search" placeholder="Search user...">
             </div>
 
-            <!-- Фильтр по времени + кнопка обновления -->
+            <!-- Фильтр по времени -->
             <div class="time-filter">
                 <label for="time-select">Filter by time:</label>
                 <select id="time-select">
@@ -144,8 +95,6 @@
                     <option value="30">Last 30 days</option>
                     <option value="all" selected>All time</option>
                 </select>
-                <!-- Кнопка обновления -->
-                <button id="refresh-btn" class="update-btn">🔄 Refresh</button>
             </div>
 
             <!-- Таблица лидеров -->
@@ -176,7 +125,7 @@
             </div>
         </div>
 
-        <!-- Analytics tab content -->
+        <!-- Analytics tab content (hidden by default) -->
         <div id="tab-analytics" class="tab-content" style="display:none; text-align:left;">
             <h2>Analytics</h2>
 
@@ -188,6 +137,35 @@
                     <option value="30">Last 30 days</option>
                     <option value="14">Last 14 days</option>
                     <option value="7">Last 7 days</option>
+                </select>
+                <!-- НОВЫЙ ФИЛЬТР ПО ЧАСАМ -->
+                <label for="hour-select" style="font-weight:600; color:#a9ddd3; white-space:nowrap;">Filter by hour:</label>
+                <select id="hour-select" style="flex:1; max-width:180px;">
+                    <option value="all">All hours</option>
+                    <option value="0">00:00</option>
+                    <option value="1">01:00</option>
+                    <option value="2">02:00</option>
+                    <option value="3">03:00</option>
+                    <option value="4">04:00</option>
+                    <option value="5">05:00</option>
+                    <option value="6">06:00</option>
+                    <option value="7">07:00</option>
+                    <option value="8">08:00</option>
+                    <option value="9">09:00</option>
+                    <option value="10">10:00</option>
+                    <option value="11">11:00</option>
+                    <option value="12">12:00</option>
+                    <option value="13">13:00</option>
+                    <option value="14">14:00</option>
+                    <option value="15">15:00</option>
+                    <option value="16">16:00</option>
+                    <option value="17">17:00</option>
+                    <option value="18">18:00</option>
+                    <option value="19">19:00</option>
+                    <option value="20">20:00</option>
+                    <option value="21">21:00</option>
+                    <option value="22">22:00</option>
+                    <option value="23">23:00</option>
                 </select>
             </div>
 
@@ -271,7 +249,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 
-    <!-- Snow effect container -->
-    <div class="snow-container" id="snowContainer"></div>
+  <!-- ... ваш существующий HTML до </body> ... -->
+
+  <!-- Snow effect container -->
+  <div class="snow-container" id="snowContainer"></div>
+
+  <!-- Chart.js CDN for analytics charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
+```
+
+Теперь вам нужно будет обновить `script.js`, чтобы добавить логику обработки нового фильтра. Я могу помочь с этим, если вы пришлёте текущий файл `script.js`.
