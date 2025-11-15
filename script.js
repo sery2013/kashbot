@@ -1,3 +1,14 @@
+Хорошо, проблема с "прыжками" при экспорте вызвана тем, что в текущем файле **отсутствует логика переключения вкладок с проверкой флага `isExporting`** и сам **флаг `isExporting` не определён**.
+
+Я внесу минимальные изменения для решения этой конкретной проблемы:
+
+1.  Добавлю глобальную переменную `isExporting`.
+2.  Обновлю `bindExportButtons`, чтобы она устанавливала этот флаг.
+3.  Обновлю функцию `setupTabs`, чтобы она проверяла флаг и не переключала вкладки во время экспорта.
+
+Вот исправленный `script.js`:
+
+```javascript
 // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
 let rawData = [];
 let data = [];
@@ -10,6 +21,8 @@ let timeFilter = "all";
 let analyticsChart = null;
 let analyticsPeriod = "all"; // filter for analytics: 'all', '7', '14', '30'
 let analyticsHourFilter = "all"; // filter for heatmap hour: 'all', '0', '1', ... '23'
+// --- ФЛАГ ДЛЯ ПРЕДОТВРАЩЕНИЯ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК ВО ВРЕМЯ ЭКСПОРТА ---
+let isExporting = false;
 
 // --- Fetch leaderboard data ---
 async function fetchData() {
@@ -462,6 +475,13 @@ function addUserClickHandlers() {
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      // --- ПРОВЕРКА ФЛАГА ЭКСПОРТА ---
+      if (isExporting) {
+        console.log("Export in progress, tab switch ignored.");
+        return;
+      }
+      // --- КОНЕЦ ПРОВЕРКИ ---
+
       document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       const tab = btn.dataset.tab;
@@ -573,46 +593,50 @@ function bindExportButtons() {
 
   if (csvBtn && !csvBtn._bound) {
     csvBtn.addEventListener('click', function(e) {
-      e.preventDefault(); // Предотвращаем стандартное поведение браузера для кнопки
-      e.stopPropagation(); // Останавливаем всплытие события
-      e.stopImmediatePropagation(); // Останавливаем все остальные обработчики на этом элементе
+      e.preventDefault();
+      e.stopPropagation();
+      // --- УСТАНОВКА ФЛАГА ---
+      isExporting = true;
+      setTimeout(() => { isExporting = false; }, 0); // Сброс через тик
       exportToCSV();
-      // Дополнительно: на всякий случай отменяем возможную навигацию
-      // путем отмены действия по умолчанию на уровне документа на короткое время
-      const blockNav = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-      };
-      document.addEventListener('click', blockNav, { capture: true, once: true });
-      setTimeout(() => {
-          document.removeEventListener('click', blockNav, { capture: true });
-      }, 100); // Блокируем на 100 мс
     });
     csvBtn._bound = true;
   }
 
   if (jsonBtn && !jsonBtn._bound) {
     jsonBtn.addEventListener('click', function(e) {
-      e.preventDefault(); // Предотвращаем стандартное поведение браузера для кнопки
-      e.stopPropagation(); // Останавливаем всплытие события
-      e.stopImmediatePropagation(); // Останавливаем все остальные обработчики на этом элементе
+      e.preventDefault();
+      e.stopPropagation();
+      // --- УСТАНОВКА ФЛАГА ---
+      isExporting = true;
+      setTimeout(() => { isExporting = false; }, 0); // Сброс через тик
       exportToJSON();
-      // Дополнительно: на всякий случай отменяем возможную навигацию
-      // путем отмены действия по умолчанию на уровне документа на короткое время
-      const blockNav = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-      };
-      document.addEventListener('click', blockNav, { capture: true, once: true });
-      setTimeout(() => {
-          document.removeEventListener('click', blockNav, { capture: true });
-      }, 100); // Блокируем на 100 мс
     });
     jsonBtn._bound = true;
   }
 }
+
+
+// --- ОСТАВШАЯСЯ ЧАСТЬ ФУНКЦИИ renderAnalytics НАЧИНАЕТСЯ ЗДЕСЬ ---
+function renderAnalytics() {
+  // Filter tweets by the selected analytics period
+  let tweets = Array.isArray(allTweets) ? allTweets : [];
+  const now = new Date();
+  const period = analyticsPeriod;
+
+  if (period !== 'all') {
+    const days = Number(period);
+    if (days > 0) {
+      tweets = tweets.filter(t => {
+        const created = t.tweet_created_at || t.created_at || t.created || null;
+        if (!created) return false;
+        const d = new Date(created);
+        if (isNaN(d)) return false;
+        const diffDays = (now - d) / (1000 * 60 * 60 * 24);
+        return diffDays <= days;
+      });
+    }
+  }
 
   // --- НОВЫЙ ФИЛЬТР: Фильтрация по часу ---
   if (analyticsHourFilter !== 'all') {
@@ -755,7 +779,7 @@ try {
             label: 'Tweets per day',
             backgroundColor: 'rgba(255, 255, 255, 0.9)', // Цвет заливки столбцов
             borderColor: 'rgba(0, 255, 255, 1)',     // Цвет обводки столбцов
-             counts
+            data: counts // <-- ИСПРАВЛЕНО: data: counts
           }]
         },
         options: {
@@ -807,6 +831,8 @@ try {
   renderHeatmap(tweets);
   bindExportButtons();
 }
+// --- КОНЕЦ renderAnalytics ---
+
 
 // Analytics time period filter
 const analyticsTimeSelect = document.getElementById('analytics-time-select');
@@ -904,6 +930,4 @@ document.addEventListener('DOMContentLoaded', () => {
         // Для базового эффекта пересчёт не обязателен.
     });
 });
-
-
-
+```
