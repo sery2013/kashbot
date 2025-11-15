@@ -16,6 +16,9 @@ let currentLang = 'en'; // по умолчанию
 async function fetchData() {
   try {
     const response = await fetch("leaderboard.json"); // <-- путь к файлу в репо
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const json = await response.json();
     rawData = json;
     normalizeData(rawData);
@@ -24,9 +27,20 @@ async function fetchData() {
     updateArrows();
     updateTotals();
     // === ОБНОВЛЕНИЕ ИНДИКАТОРА ОБНОВЛЕНИЯ ===
-    document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleString()}`;
+    // Проверяем, существует ли элемент перед обновлением
+    const lastUpdatedElement = document.getElementById('last-updated');
+    if (lastUpdatedElement) {
+        lastUpdatedElement.textContent = `Last updated: ${new Date().toLocaleString()}`;
+    } else {
+        console.warn("Element with ID 'last-updated' not found.");
+    }
   } catch (err) {
     console.error("Failed to fetch leaderboard:", err);
+    // Попробуем обновить индикатор даже при ошибке, если элемент существует
+    const lastUpdatedElement = document.getElementById('last-updated');
+    if (lastUpdatedElement) {
+        lastUpdatedElement.textContent = `Last updated: Failed - ${new Date().toLocaleString()}`;
+    }
   }
 }
 
@@ -34,6 +48,9 @@ async function fetchData() {
 async function fetchTweets() {
   try {
     const response = await fetch("all_tweets.json"); // <-- путь к файлу в репо
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const json = await response.json();
     if (Array.isArray(json)) {
       allTweets = json;
@@ -126,9 +143,13 @@ function applyTimeFilterIfNeeded(base) {
 function updateTotals() {
   const totalPosts = data.reduce((sum, s) => sum + (Number(s.posts) || 0), 0);
   const totalViews = data.reduce((sum, s) => sum + (Number(s.views) || 0), 0);
-  document.getElementById("total-posts").textContent = `Total Posts: ${totalPosts}`;
-  document.getElementById("total-users").textContent = `Total Users: ${data.length}`;
-  document.getElementById("total-views").textContent = `Total Views: ${totalViews}`;
+  const totalPostsEl = document.getElementById("total-posts");
+  const totalUsersEl = document.getElementById("total-users");
+  const totalViewsEl = document.getElementById("total-views");
+
+  if (totalPostsEl) totalPostsEl.textContent = `Total Posts: ${totalPosts}`;
+  if (totalUsersEl) totalUsersEl.textContent = `Total Users: ${data.length}`;
+  if (totalViewsEl) totalViewsEl.textContent = `Total Views: ${totalViews}`;
 }
 
 // - Sort, Filter, Render -
@@ -158,6 +179,10 @@ function shareUserOnTwitter(username) {
 // - Render Table with Share Button -
 function renderTable() {
   const tbody = document.getElementById("leaderboard-body");
+  if (!tbody) {
+      console.error("Element with ID 'leaderboard-body' not found.");
+      return;
+  }
   tbody.innerHTML = "";
 
   const filtered = filterData();
@@ -205,7 +230,10 @@ function renderTable() {
     tbody.appendChild(tr);
   });
 
-  document.getElementById("page-info").textContent = `Page ${currentPage} / ${totalPages}`;
+  const pageInfoElement = document.getElementById("page-info");
+  if (pageInfoElement) {
+      pageInfoElement.textContent = `Page ${currentPage} / ${totalPages}`;
+  }
 
   // Добавляем обработчики клика
   addUserClickHandlers();
@@ -215,7 +243,7 @@ function renderTable() {
 function escapeHtml(str) {
   // Обеспечиваем, что str - строка, прежде чем обрабатывать
   const stringified = String(str || '');
-  return stringified.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  return stringified.replace(/&/g, "&amp;").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 // - Sorting headers -
@@ -284,31 +312,38 @@ function setupTabs() {
 function showTweets(username) {
   const container = document.getElementById("tweets-list");
   const title = document.getElementById("tweets-title");
-  container.innerHTML = "";
+  if (container) {
+      container.innerHTML = "";
+  }
+  if (title) {
+      title.textContent = `Посты пользователя: ${username}`;
+  }
 
   const userTweets = allTweets.filter(tweet => {
     const candidate = (tweet.user && (tweet.user.screen_name || tweet.user.name)) || "";
     return candidate.toLowerCase().replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
   });
 
-  title.textContent = `Посты пользователя: ${username}`;
-  if (userTweets.length === 0) {
-    container.innerHTML = "<li>У пользователя нет постов</li>";
-    return;
-  }
+  if (container) {
+      if (userTweets.length === 0) {
+        container.innerHTML = "<li>У пользователя нет постов</li>";
+        return;
+      }
 
-  userTweets.forEach(tweet => {
-    const li = document.createElement("li");
-    const text = tweet.full_text || tweet.text || tweet.content || "(no text)";
-    const url = tweet.url || (tweet.id_str && tweet.user ? `https://twitter.com/${tweet.user.screen_name || tweet.user.name}/status/${tweet.id_str}` : "#");
-    li.innerHTML = `<a href="${url}" target="_blank">${escapeHtml(text)}</a>`;
-    container.appendChild(li);
-  });
+      userTweets.forEach(tweet => {
+        const li = document.createElement("li");
+        const text = tweet.full_text || tweet.text || tweet.content || "(no text)";
+        const url = tweet.url || (tweet.id_str && tweet.user ? `https://twitter.com/${tweet.user.screen_name || tweet.user.name}/status/${tweet.id_str}` : "#");
+        li.innerHTML = `<a href="${url}" target="_blank">${escapeHtml(text)}</a>`;
+        container.appendChild(li);
+      });
+  }
 }
 
 // - Обновляем обработчики клика -
 function addUserClickHandlers() {
   const tbody = document.getElementById("leaderboard-body");
+  if (!tbody) return;
   tbody.querySelectorAll("tr").forEach(tr => {
     tr.addEventListener("click", () => {
       const username = tr.children[0].textContent.trim();
@@ -459,7 +494,7 @@ function renderAnalytics() {
               label: 'Tweets per day',
               backgroundColor: 'rgba(255, 255, 255, 0.9)', // Цвет заливки столбцов
               borderColor: 'rgba(0, 255, 255, 1)', // Цвет обводки столбцов
-              data: counts // <-- ИСПРАВЛЕНО: добавлено 'data:'
+              data: counts // <-- ИСПРАВЛЕНО: добавлено ''
             }]
           },
           options: {
@@ -716,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     flake.style.animationDuration = `${durationFall}s, ${durationSway}s`;
     // Для анимации sway используем transform с динамической амплитудой
     // Это сложнее задать через style, лучше оставить базовую анимацию в CSS
-    // и генерировать уникальные ключевые кадры при необходимости.
+    // и генерировать уникальные @keyframes при необходимости.
     // Для простоты используем CSS анимацию и немного модифицируем её поведение.
     // Мы можем динамически создавать уникальные @keyframes, но это громоздко.
     // Вместо этого, можно просто менять transform вручную через JS с requestAnimationFrame,
@@ -748,82 +783,162 @@ function setLanguage(lang) {
 
     // Обновляем текст на странице
     if (lang === 'en') {
-        document.querySelector('h1').textContent = 'WELCOME RITUALISTS!';
-        document.querySelector('.welcome-section p:nth-of-type(1)').textContent = 'This leaderboard is generated based on all posts in the ';
-        document.querySelector('.welcome-section p:nth-of-type(2)').textContent = 'If your posts are not published through ';
-        document.querySelector('.welcome-section p:nth-of-type(3)').textContent = 'By clicking on any participant, you can view their works directly on the website.';
-        document.querySelector('.welcome-section p:nth-of-type(4)').textContent = 'By clicking on any metric (for example, views), you can filter by it.';
-        document.querySelector('.welcome-section p:nth-of-type(5)').innerHTML = '<b><span style="color:#90EE90;">Updates every 2 days</span></b>';
-        document.querySelector('.welcome-section p:nth-of-type(7)').textContent = 'Support us on Twitter!';
-        document.querySelector('.team-box p').innerHTML = 'Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>';
+        const h1 = document.querySelector('h1');
+        if (h1) h1.textContent = 'WELCOME RITUALISTS!';
+        const welcomeP1 = document.querySelector('.welcome-section p:nth-of-type(1)');
+        if (welcomeP1) welcomeP1.textContent = 'This leaderboard is generated based on all posts in the ';
+        const welcomeP2 = document.querySelector('.welcome-section p:nth-of-type(2)');
+        if (welcomeP2) welcomeP2.textContent = 'If your posts are not published through ';
+        const welcomeP3 = document.querySelector('.welcome-section p:nth-of-type(3)');
+        if (welcomeP3) welcomeP3.textContent = 'By clicking on any participant, you can view their works directly on the website.';
+        const welcomeP4 = document.querySelector('.welcome-section p:nth-of-type(4)');
+        if (welcomeP4) welcomeP4.textContent = 'By clicking on any metric (for example, views), you can filter by it.';
+        const updateInfoP = document.querySelector('.welcome-section p:nth-of-type(5)');
+        if (updateInfoP) updateInfoP.innerHTML = '<b><span style="color:#90EE90;">Updates every 2 days</span></b>';
+        const supportP = document.querySelector('.welcome-section p:nth-of-type(7)');
+        if (supportP) supportP.textContent = 'Support us on Twitter!';
+        const teamP = document.querySelector('.team-box p');
+        if (teamP) teamP.innerHTML = 'Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>';
 
-        document.querySelector('#time-select').options[0].textContent = 'Last 7 days';
-        document.querySelector('#time-select').options[1].textContent = 'Last 14 days';
-        document.querySelector('#time-select').options[2].textContent = 'Last 30 days';
-        document.querySelector('#time-select').options[3].textContent = 'All time';
-        document.querySelector('#search').placeholder = 'Search user...';
-        document.querySelector('#prev-page').textContent = 'Previous';
-        document.querySelector('#next-page').textContent = 'Next';
-        document.querySelector('#refresh-btn').textContent = '🔄 Refresh';
+        const timeSelectOptions = document.querySelectorAll('#time-select option');
+        if (timeSelectOptions.length >= 4) {
+            timeSelectOptions[0].textContent = 'Last 7 days';
+            timeSelectOptions[1].textContent = 'Last 14 days';
+            timeSelectOptions[2].textContent = 'Last 30 days';
+            timeSelectOptions[3].textContent = 'All time';
+        }
+        const searchInput = document.getElementById('search');
+        if (searchInput) searchInput.placeholder = 'Search user...';
+        const prevPageBtn = document.getElementById('prev-page');
+        if (prevPageBtn) prevPageBtn.textContent = 'Previous';
+        const nextPageBtn = document.getElementById('next-page');
+        if (nextPageBtn) nextPageBtn.textContent = 'Next';
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) refreshBtn.textContent = '🔄 Refresh';
 
-        document.querySelector('#tab-analytics h2').textContent = 'Analytics';
-        document.querySelector('#analytics-time-select').options[0].textContent = 'All time';
-        document.querySelector('#analytics-time-select').options[1].textContent = 'Last 30 days';
-        document.querySelector('#analytics-time-select').options[2].textContent = 'Last 14 days';
-        document.querySelector('#analytics-time-select').options[3].textContent = 'Last 7 days';
+        const analyticsH2 = document.querySelector('#tab-analytics h2');
+        if (analyticsH2) analyticsH2.textContent = 'Analytics';
+        const analyticsTimeOptions = document.querySelectorAll('#analytics-time-select option');
+        if (analyticsTimeOptions.length >= 4) {
+            analyticsTimeOptions[0].textContent = 'All time';
+            analyticsTimeOptions[1].textContent = 'Last 30 days';
+            analyticsTimeOptions[2].textContent = 'Last 14 days';
+            analyticsTimeOptions[3].textContent = 'Last 7 days';
+        }
 
-        document.querySelector('.analytics-tab-btn[data-analytics-tab="averages"]').textContent = 'Avg metrics';
-        document.querySelector('.analytics-tab-btn[data-analytics-tab="authors"]').textContent = 'Top 10 authors';
-        document.querySelector('.analytics-tab-btn[data-analytics-tab="posts"]').textContent = 'Top 10 posts';
+        const hourSelectOptions = document.querySelectorAll('#hour-select option');
+        if (hourSelectOptions.length >= 25) { // Проверяем, что есть опции "All hours" и "0"-"23"
+            hourSelectOptions[0].textContent = 'All hours';
+            for (let i = 1; i <= 24; i++) {
+                if (hourSelectOptions[i]) {
+                    hourSelectOptions[i].textContent = `${i - 1}:00`;
+                }
+            }
+        }
 
-        document.querySelector('#export-csv').textContent = 'Export CSV';
-        document.querySelector('#export-json').textContent = 'Export JSON';
+        const avgMetricsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="averages"]');
+        if (avgMetricsBtn) avgMetricsBtn.textContent = 'Avg metrics';
+        const topAuthorsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="authors"]');
+        if (topAuthorsBtn) topAuthorsBtn.textContent = 'Top 10 authors';
+        const topPostsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="posts"]');
+        if (topPostsBtn) topPostsBtn.textContent = 'Top 10 posts';
 
-        document.querySelector('#name-header').textContent = 'User';
-        document.querySelector('#posts-header').textContent = 'Posts';
-        document.querySelector('#likes-header').textContent = 'Likes';
-        document.querySelector('#retweets-header').textContent = 'Retweets';
-        document.querySelector('#comments-header').textContent = 'Comments';
-        document.querySelector('#views-col-header').textContent = 'Views';
+        const exportCsvBtn = document.getElementById('export-csv');
+        if (exportCsvBtn) exportCsvBtn.textContent = 'Export CSV';
+        const exportJsonBtn = document.getElementById('export-json');
+        if (exportJsonBtn) exportJsonBtn.textContent = 'Export JSON';
+
+        const headers = {
+            'name-header': 'User',
+            'posts-header': 'Posts',
+            'likes-header': 'Likes',
+            'retweets-header': 'Retweets',
+            'comments-header': 'Comments',
+            'views-col-header': 'Views'
+        };
+        Object.entries(headers).forEach(([id, text]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        });
 
     } else if (lang === 'ru') {
-        document.querySelector('h1').textContent = 'ДОБРО ПОЖАЛОВАТЬ, РИТУАЛИСТЫ!';
-        document.querySelector('.welcome-section p:nth-of-type(1)').textContent = 'Этот лидерборд генерируется на основе всех постов в сообществе ';
-        document.querySelector('.welcome-section p:nth-of-type(2)').textContent = 'Если ваши посты не публикуются через ';
-        document.querySelector('.welcome-section p:nth-of-type(3)').textContent = 'Щёлкнув по любому участнику, вы можете просмотреть его работы на сайте.';
-        document.querySelector('.welcome-section p:nth-of-type(4)').textContent = 'Щёлкнув по любой метрике (например, просмотры), вы можете отфильтровать по ней.';
-        document.querySelector('.welcome-section p:nth-of-type(5)').innerHTML = '<b><span style="color:#90EE90;">Обновляется каждые 2 дня</span></b>';
-        document.querySelector('.welcome-section p:nth-of-type(7)').textContent = 'Поддержите нас в Twitter!';
-        document.querySelector('.team-box p').innerHTML = 'Разработчик - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>';
+        const h1 = document.querySelector('h1');
+        if (h1) h1.textContent = 'ДОБРО ПОЖАЛОВАТЬ, РИТУАЛИСТЫ!';
+        const welcomeP1 = document.querySelector('.welcome-section p:nth-of-type(1)');
+        if (welcomeP1) welcomeP1.textContent = 'Этот лидерборд генерируется на основе всех постов в сообществе ';
+        const welcomeP2 = document.querySelector('.welcome-section p:nth-of-type(2)');
+        if (welcomeP2) welcomeP2.textContent = 'Если ваши посты не публикуются через ';
+        const welcomeP3 = document.querySelector('.welcome-section p:nth-of-type(3)');
+        if (welcomeP3) welcomeP3.textContent = 'Щёлкнув по любому участнику, вы можете просмотреть его работы на сайте.';
+        const welcomeP4 = document.querySelector('.welcome-section p:nth-of-type(4)');
+        if (welcomeP4) welcomeP4.textContent = 'Щёлкнув по любой метрике (например, просмотры), вы можете отфильтровать по ней.';
+        const updateInfoP = document.querySelector('.welcome-section p:nth-of-type(5)');
+        if (updateInfoP) updateInfoP.innerHTML = '<b><span style="color:#90EE90;">Обновляется каждые 2 дня</span></b>';
+        const supportP = document.querySelector('.welcome-section p:nth-of-type(7)');
+        if (supportP) supportP.textContent = 'Поддержите нас в Twitter!';
+        const teamP = document.querySelector('.team-box p');
+        if (teamP) teamP.innerHTML = 'Разработчик - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>';
 
-        document.querySelector('#time-select').options[0].textContent = 'Последние 7 дней';
-        document.querySelector('#time-select').options[1].textContent = 'Последние 14 дней';
-        document.querySelector('#time-select').options[2].textContent = 'Последние 30 дней';
-        document.querySelector('#time-select').options[3].textContent = 'Все время';
-        document.querySelector('#search').placeholder = 'Поиск пользователя...';
-        document.querySelector('#prev-page').textContent = 'Назад';
-        document.querySelector('#next-page').textContent = 'Вперёд';
-        document.querySelector('#refresh-btn').textContent = '🔄 Обновить';
+        const timeSelectOptions = document.querySelectorAll('#time-select option');
+        if (timeSelectOptions.length >= 4) {
+            timeSelectOptions[0].textContent = 'Последние 7 дней';
+            timeSelectOptions[1].textContent = 'Последние 14 дней';
+            timeSelectOptions[2].textContent = 'Последние 30 дней';
+            timeSelectOptions[3].textContent = 'Все время';
+        }
+        const searchInput = document.getElementById('search');
+        if (searchInput) searchInput.placeholder = 'Поиск пользователя...';
+        const prevPageBtn = document.getElementById('prev-page');
+        if (prevPageBtn) prevPageBtn.textContent = 'Назад';
+        const nextPageBtn = document.getElementById('next-page');
+        if (nextPageBtn) nextPageBtn.textContent = 'Вперёд';
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) refreshBtn.textContent = '🔄 Обновить';
 
-        document.querySelector('#tab-analytics h2').textContent = 'Аналитика';
-        document.querySelector('#analytics-time-select').options[0].textContent = 'Все время';
-        document.querySelector('#analytics-time-select').options[1].textContent = 'Последние 30 дней';
-        document.querySelector('#analytics-time-select').options[2].textContent = 'Последние 14 дней';
-        document.querySelector('#analytics-time-select').options[3].textContent = 'Последние 7 дней';
+        const analyticsH2 = document.querySelector('#tab-analytics h2');
+        if (analyticsH2) analyticsH2.textContent = 'Аналитика';
+        const analyticsTimeOptions = document.querySelectorAll('#analytics-time-select option');
+        if (analyticsTimeOptions.length >= 4) {
+            analyticsTimeOptions[0].textContent = 'Все время';
+            analyticsTimeOptions[1].textContent = 'Последние 30 дней';
+            analyticsTimeOptions[2].textContent = 'Последние 14 дней';
+            analyticsTimeOptions[3].textContent = 'Последние 7 дней';
+        }
 
-        document.querySelector('.analytics-tab-btn[data-analytics-tab="averages"]').textContent = 'Средние метрики';
-        document.querySelector('.analytics-tab-btn[data-analytics-tab="authors"]').textContent = 'Топ-10 авторов';
-        document.querySelector('.analytics-tab-btn[data-analytics-tab="posts"]').textContent = 'Топ-10 постов';
+        const hourSelectOptions = document.querySelectorAll('#hour-select option');
+        if (hourSelectOptions.length >= 25) {
+            hourSelectOptions[0].textContent = 'Все часы';
+            for (let i = 1; i <= 24; i++) {
+                if (hourSelectOptions[i]) {
+                    hourSelectOptions[i].textContent = `${i - 1}:00`;
+                }
+            }
+        }
 
-        document.querySelector('#export-csv').textContent = 'Экспорт CSV';
-        document.querySelector('#export-json').textContent = 'Экспорт JSON';
+        const avgMetricsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="averages"]');
+        if (avgMetricsBtn) avgMetricsBtn.textContent = 'Средние метрики';
+        const topAuthorsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="authors"]');
+        if (topAuthorsBtn) topAuthorsBtn.textContent = 'Топ-10 авторов';
+        const topPostsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="posts"]');
+        if (topPostsBtn) topPostsBtn.textContent = 'Топ-10 постов';
 
-        document.querySelector('#name-header').textContent = 'Пользователь';
-        document.querySelector('#posts-header').textContent = 'Посты';
-        document.querySelector('#likes-header').textContent = 'Лайки';
-        document.querySelector('#retweets-header').textContent = 'Ретвиты';
-        document.querySelector('#comments-header').textContent = 'Комментарии';
-        document.querySelector('#views-col-header').textContent = 'Просмотры';
+        const exportCsvBtn = document.getElementById('export-csv');
+        if (exportCsvBtn) exportCsvBtn.textContent = 'Экспорт CSV';
+        const exportJsonBtn = document.getElementById('export-json');
+        if (exportJsonBtn) exportJsonBtn.textContent = 'Экспорт JSON';
+
+        const headers = {
+            'name-header': 'Пользователь',
+            'posts-header': 'Посты',
+            'likes-header': 'Лайки',
+            'retweets-header': 'Ретвиты',
+            'comments-header': 'Комментарии',
+            'views-col-header': 'Просмотры'
+        };
+        Object.entries(headers).forEach(([id, text]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        });
     }
 
     // Обновление текста в блоках статистики
@@ -871,20 +986,22 @@ function setLanguage(lang) {
 }
 
 // Обработчики кликов для переключения языка
-langEn.addEventListener('click', () => {
-    if (currentLang !== 'en') {
-        setLanguage('en');
-        localStorage.setItem('lang', 'en'); // Сохраняем язык в localStorage
-    }
-});
-
-langRu.addEventListener('click', () => {
-    if (currentLang !== 'ru') {
-        setLanguage('ru');
-        localStorage.setItem('lang', 'ru'); // Сохраняем язык в localStorage
-    }
-});
-
+if (langEn) {
+    langEn.addEventListener('click', () => {
+        if (currentLang !== 'en') {
+            setLanguage('en');
+            localStorage.setItem('lang', 'en'); // Сохраняем язык в localStorage
+        }
+    });
+}
+if (langRu) {
+    langRu.addEventListener('click', () => {
+        if (currentLang !== 'ru') {
+            setLanguage('ru');
+            localStorage.setItem('lang', 'ru'); // Сохраняем язык в localStorage
+        }
+    });
+}
 // Загрузка сохраненного языка при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('lang');
@@ -900,12 +1017,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // === MANUAL UPDATE BUTTON ===
-document.getElementById('refresh-btn').addEventListener('click', () => {
-    console.log("Manual refresh triggered!");
-    // Вызываем те же функции, что и при автоматическом обновлении
-    fetchData();
-    fetchTweets(); // Если обновление твитов также нужно
+// Обработчик для кнопки "Refresh" - теперь внутри DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            console.log("Manual refresh triggered!");
+            // Вызываем те же функции, что и при автоматическом обновлении
+            fetchData();
+            fetchTweets(); // Если обновление твитов также нужно
+        });
+    } else {
+        console.warn("Button with ID 'refresh-btn' not found.");
+    }
 });
+
 
 // - Функция для скачивания файла -
 function downloadFile(filename, content, mimeType = 'text/plain') {
