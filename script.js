@@ -1,3 +1,4 @@
+// === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
 let rawData = [];
 let data = [];
 let allTweets = [];
@@ -6,13 +7,13 @@ let sortOrder = "desc";
 let currentPage = 1;
 const perPage = 15;
 let timeFilter = "all";
-let analyticsChart = null;
+let analyticsChart = null; // Для хранения экземпляра Chart.js
 let analyticsPeriod = "all"; // filter for analytics: 'all', '7', '14', '30'
 
 // --- Fetch leaderboard data ---
 async function fetchData() {
   try {
-    const response = await fetch("leaderboard.json"); // <-- путь к файлу в репо
+    const response = await fetch("leaderboard.json");
     const json = await response.json();
     rawData = json;
     normalizeData(rawData);
@@ -28,7 +29,7 @@ async function fetchData() {
 // --- Fetch all tweets ---
 async function fetchTweets() {
   try {
-    const response = await fetch("all_tweets.json"); // <-- путь к файлу в репо
+    const response = await fetch("all_tweets.json");
     const json = await response.json();
     if (Array.isArray(json)) {
       allTweets = json;
@@ -174,10 +175,12 @@ function renderTable() {
   });
 
   document.getElementById("page-info").textContent = `Page ${currentPage} / ${totalPages}`;
+  // Добавляем обработчики клика
+  addUserClickHandlers();
 }
 
 function escapeHtml(str) {
-  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "<").replace(/>/g, ">");
 }
 
 // --- Sorting headers ---
@@ -263,180 +266,8 @@ function addUserClickHandlers() {
     });
 }
 
-// --- Обновляем renderTable, чтобы добавлять клики ---
-function renderTable() {
-    const tbody = document.getElementById("leaderboard-body");
-    tbody.innerHTML = "";
-
-    const filtered = filterData();
-    const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-    if (currentPage > totalPages) currentPage = totalPages;
-    const start = (currentPage - 1) * perPage;
-    const pageData = filtered.slice(start, start + perPage);
-
-    pageData.forEach(stats => {
-        const name = stats.username || "";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${escapeHtml(name)}</td>
-          <td>${Number(stats.posts || 0)}</td>
-          <td>${Number(stats.likes || 0)}</td>
-          <td>${Number(stats.retweets || 0)}</td>
-          <td>${Number(stats.comments || 0)}</td>
-          <td>${Number(stats.views || 0)}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    document.getElementById("page-info").textContent = `Page ${currentPage} / ${totalPages}`;
-
-    // Добавляем обработчики клика
-    addUserClickHandlers();
-}
-
-// --- Создание аккордеона твитов ---
-function toggleTweetsRow(tr, username) {
-    // Если уже есть раскрытая строка под этим пользователем — удаляем её
-    const nextRow = tr.nextElementSibling;
-    if (nextRow && nextRow.classList.contains("tweets-row")) {
-        nextRow.remove();
-        return;
-    }
-
-    // Удаляем все остальные раскрытые строки
-    document.querySelectorAll(".tweets-row").forEach(row => row.remove());
-
-    // Создаем новую строку
-    const tweetsRow = document.createElement("tr");
-    tweetsRow.classList.add("tweets-row");
-    const td = document.createElement("td");
-    td.colSpan = 6; // охватывает все колонки таблицы
-    td.style.background = "#f9f9f9";
-    td.style.padding = "10px";
-
-    const userTweets = allTweets.filter(tweet => {
-        const candidate = (tweet.user && (tweet.user.screen_name || tweet.user.name)) || "";
-        return candidate.toLowerCase().replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
-    });
-
-    if (userTweets.length === 0) {
-        td.innerHTML = "<i>У пользователя нет постов</i>";
-    } else {
-        const ul = document.createElement("ul");
-        ul.style.margin = "0";
-        ul.style.padding = "0 0 0 20px";
-        userTweets.forEach(tweet => {
-            const li = document.createElement("li");
-            const content = tweet.text || tweet.content || "(no content)";
-            const url = tweet.url || (tweet.id_str ? `https://twitter.com/${username}/status/${tweet.id_str}` : "#");
-            li.innerHTML = `<a href="${url}" target="_blank">${escapeHtml(content)}</a>`;
-            ul.appendChild(li);
-        });
-        td.appendChild(ul);
-    }
-
-    tweetsRow.appendChild(td);
-    tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
-
-
-}
-
-function toggleTweetsRow(tr, username) {
-  const nextRow = tr.nextElementSibling;
-  const isAlreadyOpen = nextRow && nextRow.classList.contains("tweets-row") &&
-                        nextRow.dataset.username === username;
-
-  // Убираем все предыдущие аккордеоны и подсветку
-  document.querySelectorAll(".tweets-row").forEach(row => row.remove());
-  document.querySelectorAll("tbody tr").forEach(row => row.classList.remove("active-row"));
-
-  // Если уже был открыт — просто закрываем
-  if (isAlreadyOpen) return;
-
-  // Подсветить текущую строку
-  tr.classList.add("active-row");
-
-  const tweetsRow = document.createElement("tr");
-  tweetsRow.classList.add("tweets-row");
-  tweetsRow.dataset.username = username; // <-- важно для проверки дубликатов
-  const td = document.createElement("td");
-  td.colSpan = 6;
-
-  const userTweets = allTweets.filter(tweet => {
-    const candidate = (tweet.user?.screen_name || tweet.user?.name || "").toLowerCase();
-    return candidate.replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
-  });
-
-  if (userTweets.length === 0) {
-    td.innerHTML = "<i style='color:#aaa;'>У пользователя нет постов</i>";
-  } else {
-    const container = document.createElement("div");
-    container.classList.add("tweet-container");
-
-    userTweets.forEach(tweet => {
-      const content = tweet.full_text || tweet.text || tweet.content || "";
-      const url = tweet.url || (tweet.id_str ? `https://twitter.com/${username}/status/${tweet.id_str}` : "#");
-
-      // формат даты
-      let dateRaw = tweet.created_at || tweet.tweet_created_at || "";
-      let date = "";
-      if (dateRaw) {
-        const parsed = new Date(dateRaw);
-        date = !isNaN(parsed)
-          ? parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-          : dateRaw.split(" ")[0];
-      }
-
-      // media без дубликатов
-      const mediaList = tweet.extended_entities?.media || tweet.entities?.media || tweet.media || [];
-      const uniqueMediaUrls = [...new Set(mediaList.map(m => m.media_url_https || m.media_url).filter(Boolean))];
-      let imgTag = uniqueMediaUrls.map(url => `<img src="${url}">`).join("");
-
-      // fallback на ссылки в тексте
-      if (!imgTag) {
-        const match = content.match(/https?:\/\/\S+\.(jpg|jpeg|png|gif|webp)/i);
-        if (match) imgTag = `<img src="${match[0]}">`;
-      }
-
-      // создаём карточку
-      const card = document.createElement("div");
-      card.classList.add("tweet-card");
-      const wordCount = content.trim().split(/\s+/).length;
-      if (wordCount <= 3 && !imgTag) card.classList.add("short");
-
-      card.innerHTML = `
-        <a href="${url}" target="_blank" style="text-decoration:none; color:inherit;">
-          <p>${escapeHtml(content)}</p>
-          ${imgTag}
-          <div class="tweet-date">${date}</div>
-        </a>
-      `;
-      container.appendChild(card);
-    });
-
-    td.appendChild(container);
-  }
-
-  tweetsRow.appendChild(td);
-  tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
-}
-
-
-
-
-
-// --- Обновляем обработчики клика ---
-function addUserClickHandlers() {
-    const tbody = document.getElementById("leaderboard-body");
-    tbody.querySelectorAll("tr").forEach(tr => {
-        tr.addEventListener("click", () => {
-            const username = tr.children[0].textContent.trim();
-            toggleTweetsRow(tr, username);
-        });
-    });
-}
-
 // --- renderTable остаётся как раньше, addUserClickHandlers вызывается в конце ---
+
 
 const player = document.getElementById('player');
 const playBtn = document.getElementById('play-btn');
@@ -472,20 +303,40 @@ if (nextBtn) {
 
 // --- Tabs setup and Analytics rendering ---
 function setupTabs() {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
+  // Находим все кнопки вкладок
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  // Находим контейнеры для содержимого вкладок
+  const leaderboardWrapper = document.getElementById('leaderboard-wrapper');
+  const analyticsTabContent = document.getElementById('tab-analytics');
+
+  // Проверяем, что элементы найдены
+  if (!tabButtons.length || !leaderboardWrapper || !analyticsTabContent) {
+    console.warn('Tabs elements not found in DOM.');
+    return;
+  }
+
+  // Добавляем обработчики кликов к каждой кнопке
+  tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      // Убираем класс 'active' у всех кнопок
+      tabButtons.forEach(b => b.classList.remove('active'));
+      // Добавляем класс 'active' к нажатой кнопке
       btn.classList.add('active');
+
+      // Получаем целевую вкладку из data-tab
       const tab = btn.dataset.tab;
-      const lb = document.getElementById('leaderboard-wrapper');
-      const an = document.getElementById('tab-analytics');
+
+      // Показываем/скрываем содержимое вкладок
       if (tab === 'analytics') {
-        if (lb) lb.style.display = 'none';
-        if (an) an.style.display = 'block';
-        renderAnalytics();
-      } else {
-        if (lb) lb.style.display = 'block';
-        if (an) an.style.display = 'none';
+        leaderboardWrapper.style.display = 'none';
+        analyticsTabContent.style.display = 'block';
+        // Если аналитика активна, вызываем её рендер
+        if (typeof renderAnalytics === "function") {
+            renderAnalytics();
+        }
+      } else { // tab === 'leaderboard'
+        leaderboardWrapper.style.display = 'block';
+        analyticsTabContent.style.display = 'none';
       }
     });
   });
@@ -684,13 +535,25 @@ if (analyticsTimeSelect) {
 
 // Nested analytics tabs setup
 function setupAnalyticsTabs() {
+  // Находим все кнопки вложенных вкладок аналитики
   const btns = document.querySelectorAll('.analytics-tab-btn');
+  // Находим все секции вложенных вкладок аналитики
+  const sections = document.querySelectorAll('.analytics-nested-content');
+
+  // Проверяем, что элементы найдены
+  if (!btns.length || !sections.length) {
+    console.warn('Nested analytics tabs elements not found in DOM.');
+    return;
+  }
+
+  // Добавляем обработчики кликов к каждой кнопке вложенной вкладки
   btns.forEach(btn => {
     btn.addEventListener('click', () => {
-      // Remove active from all buttons and sections
+      // Убираем класс 'active' у всех кнопок и секций
       btns.forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.analytics-nested-content').forEach(s => s.classList.remove('active'));
-      // Add active to clicked button and corresponding section
+      sections.forEach(s => s.classList.remove('active'));
+
+      // Добавляем класс 'active' к нажатой кнопке и соответствующей секции
       btn.classList.add('active');
       const section = btn.dataset.analyticsTab;
       const sectionEl = document.querySelector(`[data-analytics-section="${section}"]`);
@@ -699,5 +562,87 @@ function setupAnalyticsTabs() {
   });
 }
 
-// Инициализация табов
-try { setupTabs(); setupAnalyticsTabs(); } catch(e) { console.warn('Tabs init failed', e); }
+// Инициализация табов ПОСЛЕ загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+  setupTabs(); // Инициализируем основные вкладки
+  setupAnalyticsTabs(); // Инициализируем вложенные вкладки аналитики
+});
+
+
+// --- Добавляем обработчики клика на строки таблицы после рендера ---
+function addUserClickHandlers() {
+    const tbody = document.getElementById("leaderboard-body");
+    tbody.querySelectorAll("tr").forEach(tr => {
+        tr.addEventListener("click", () => {
+            const username = tr.children[0].textContent.trim();
+            toggleTweetsRow(tr, username);
+        });
+    });
+}
+
+function toggleTweetsRow(tr, username) {
+  const nextRow = tr.nextElementSibling;
+  const isAlreadyOpen = nextRow && nextRow.classList.contains("tweets-row") &&
+                        nextRow.dataset.username === username;
+
+  document.querySelectorAll(".tweets-row").forEach(row => row.remove());
+  document.querySelectorAll("tbody tr").forEach(row => row.classList.remove("active-row"));
+
+  if (isAlreadyOpen) return;
+
+  tr.classList.add("active-row");
+
+  const tweetsRow = document.createElement("tr");
+  tweetsRow.classList.add("tweets-row");
+  tweetsRow.dataset.username = username;
+  const td = document.createElement("td");
+  td.colSpan = 6;
+
+  const userTweets = allTweets.filter(tweet => {
+    const candidate = (tweet.user?.screen_name || tweet.user?.name || "").toLowerCase();
+    return candidate.replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
+  });
+
+  if (userTweets.length === 0) {
+    td.innerHTML = "<i style='color:#aaa;'>User has no posts</i>";
+  } else {
+    const container = document.createElement("div");
+    container.classList.add("tweet-container");
+
+    userTweets.forEach(tweet => {
+      const content = tweet.full_text || tweet.text || tweet.content || "";
+      const url = tweet.url || (tweet.id_str ? `https://twitter.com/${username}/status/${tweet.id_str}` : "#");
+      let dateRaw = tweet.created_at || tweet.tweet_created_at || "";
+      let date = "";
+      if (dateRaw) {
+        const parsed = new Date(dateRaw);
+        date = !isNaN(parsed)
+          ? parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+          : dateRaw.split(" ")[0];
+      }
+      const mediaList = tweet.extended_entities?.media || tweet.entities?.media || tweet.media || [];
+      const uniqueMediaUrls = [...new Set(mediaList.map(m => m.media_url_https || m.media_url).filter(Boolean))];
+      let imgTag = uniqueMediaUrls.map(url => `<img src="${url}">`).join("");
+      if (!imgTag) {
+        const match = content.match(/https?:\/\/\S+\.(jpg|jpeg|png|gif|webp)/i);
+        if (match) imgTag = `<img src="${match[0]}">`;
+      }
+      const card = document.createElement("div");
+      card.classList.add("tweet-card");
+      const wordCount = content.trim().split(/\s+/).length;
+      if (wordCount <= 3 && !imgTag) card.classList.add("short");
+      card.innerHTML = `
+        <a href="${url}" target="_blank" style="text-decoration:none; color:inherit;">
+          <p>${escapeHtml(content)}</p>
+          ${imgTag}
+          <div class="tweet-date">${date}</div>
+        </a>
+      `;
+      container.appendChild(card);
+    });
+    td.appendChild(container);
+  }
+
+  tweetsRow.appendChild(td);
+  tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
+}
