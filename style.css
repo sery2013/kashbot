@@ -1134,7 +1134,7 @@ select option:checked {
   bottom: 0;
   height: 1px;
   background: #ffffff; /* Белый цвет линии */
-  opacity: 0.8; /* Полупрозрачность */
+  opacity: 0.9; /* Полупрозрачность */
   z-index: 1; /* Помещаем линию поверх фона карточки */
 }
 
@@ -1142,6 +1142,7 @@ select option:checked {
 #top-authors-list li:last-child::after {
   display: none;
 }
+
 
 
 
