@@ -1,4 +1,3 @@
-// === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
 let rawData = [];
 let data = [];
 let allTweets = [];
@@ -163,14 +162,8 @@ function renderTable() {
   pageData.forEach(stats => {
     const name = stats.username || "";
     const tr = document.createElement("tr");
-    // --- ИЗМЕНЕНО: Добавлена кнопка "Поделиться" ---
     tr.innerHTML = `
-      <td>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span>${escapeHtml(name)}</span>
-          <button class="share-btn" onclick="shareUserOnTwitter('${escapeHtml(name)}')" title="Share ${escapeHtml(name)} on Twitter">🐦</button>
-        </div>
-      </td>
+      <td>${escapeHtml(name)}</td>
       <td>${Number(stats.posts || 0)}</td>
       <td>${Number(stats.likes || 0)}</td>
       <td>${Number(stats.retweets || 0)}</td>
@@ -181,13 +174,10 @@ function renderTable() {
   });
 
   document.getElementById("page-info").textContent = `Page ${currentPage} / ${totalPages}`;
-
-  // Добавляем обработчики клика (всегда вызываем после рендера)
-  addUserClickHandlers();
 }
 
 function escapeHtml(str) {
-  return String(str).replace(/&/g, "&amp;").replace(/</g, "<").replace(/>/g, ">");
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 // --- Sorting headers ---
@@ -267,11 +257,8 @@ function addUserClickHandlers() {
     const tbody = document.getElementById("leaderboard-body");
     tbody.querySelectorAll("tr").forEach(tr => {
         tr.addEventListener("click", () => {
-            const usernameElement = tr.querySelector('td:first-child span'); // Находим span с именем
-            if (usernameElement) {
-                const username = usernameElement.textContent.trim();
-                showTweets(username);
-            }
+            const username = tr.children[0].textContent.trim();
+            showTweets(username);
         });
     });
 }
@@ -290,14 +277,8 @@ function renderTable() {
     pageData.forEach(stats => {
         const name = stats.username || "";
         const tr = document.createElement("tr");
-        // --- ИЗМЕНЕНО: Добавлена кнопка "Поделиться" ---
         tr.innerHTML = `
-          <td>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span>${escapeHtml(name)}</span>
-              <button class="share-btn" onclick="shareUserOnTwitter('${escapeHtml(name)}')" title="Share ${escapeHtml(name)} on Twitter">🐦</button>
-            </div>
-          </td>
+          <td>${escapeHtml(name)}</td>
           <td>${Number(stats.posts || 0)}</td>
           <td>${Number(stats.likes || 0)}</td>
           <td>${Number(stats.retweets || 0)}</td>
@@ -356,55 +337,108 @@ function toggleTweetsRow(tr, username) {
 
     tweetsRow.appendChild(td);
     tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
+
+
 }
+
+function toggleTweetsRow(tr, username) {
+  const nextRow = tr.nextElementSibling;
+  const isAlreadyOpen = nextRow && nextRow.classList.contains("tweets-row") &&
+                        nextRow.dataset.username === username;
+
+  // Убираем все предыдущие аккордеоны и подсветку
+  document.querySelectorAll(".tweets-row").forEach(row => row.remove());
+  document.querySelectorAll("tbody tr").forEach(row => row.classList.remove("active-row"));
+
+  // Если уже был открыт — просто закрываем
+  if (isAlreadyOpen) return;
+
+  // Подсветить текущую строку
+  tr.classList.add("active-row");
+
+  const tweetsRow = document.createElement("tr");
+  tweetsRow.classList.add("tweets-row");
+  tweetsRow.dataset.username = username; // <-- важно для проверки дубликатов
+  const td = document.createElement("td");
+  td.colSpan = 6;
+
+  const userTweets = allTweets.filter(tweet => {
+    const candidate = (tweet.user?.screen_name || tweet.user?.name || "").toLowerCase();
+    return candidate.replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
+  });
+
+  if (userTweets.length === 0) {
+    td.innerHTML = "<i style='color:#aaa;'>У пользователя нет постов</i>";
+  } else {
+    const container = document.createElement("div");
+    container.classList.add("tweet-container");
+
+    userTweets.forEach(tweet => {
+      const content = tweet.full_text || tweet.text || tweet.content || "";
+      const url = tweet.url || (tweet.id_str ? `https://twitter.com/${username}/status/${tweet.id_str}` : "#");
+
+      // формат даты
+      let dateRaw = tweet.created_at || tweet.tweet_created_at || "";
+      let date = "";
+      if (dateRaw) {
+        const parsed = new Date(dateRaw);
+        date = !isNaN(parsed)
+          ? parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+          : dateRaw.split(" ")[0];
+      }
+
+      // media без дубликатов
+      const mediaList = tweet.extended_entities?.media || tweet.entities?.media || tweet.media || [];
+      const uniqueMediaUrls = [...new Set(mediaList.map(m => m.media_url_https || m.media_url).filter(Boolean))];
+      let imgTag = uniqueMediaUrls.map(url => `<img src="${url}">`).join("");
+
+      // fallback на ссылки в тексте
+      if (!imgTag) {
+        const match = content.match(/https?:\/\/\S+\.(jpg|jpeg|png|gif|webp)/i);
+        if (match) imgTag = `<img src="${match[0]}">`;
+      }
+
+      // создаём карточку
+      const card = document.createElement("div");
+      card.classList.add("tweet-card");
+      const wordCount = content.trim().split(/\s+/).length;
+      if (wordCount <= 3 && !imgTag) card.classList.add("short");
+
+      card.innerHTML = `
+        <a href="${url}" target="_blank" style="text-decoration:none; color:inherit;">
+          <p>${escapeHtml(content)}</p>
+          ${imgTag}
+          <div class="tweet-date">${date}</div>
+        </a>
+      `;
+      container.appendChild(card);
+    });
+
+    td.appendChild(container);
+  }
+
+  tweetsRow.appendChild(td);
+  tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
+}
+
+
+
+
 
 // --- Обновляем обработчики клика ---
 function addUserClickHandlers() {
     const tbody = document.getElementById("leaderboard-body");
     tbody.querySelectorAll("tr").forEach(tr => {
         tr.addEventListener("click", () => {
-            const usernameElement = tr.querySelector('td:first-child span'); // Находим span с именем
-            if (usernameElement) {
-                const username = usernameElement.textContent.trim();
-                toggleTweetsRow(tr, username);
-            }
+            const username = tr.children[0].textContent.trim();
+            toggleTweetsRow(tr, username);
         });
     });
 }
 
 // --- renderTable остаётся как раньше, addUserClickHandlers вызывается в конце ---
 
-const player = document.getElementById('player');
-const playBtn = document.getElementById('play-btn');
-const nextBtn = document.getElementById('next-btn');
 
-
-let isPlaying = false;
-
-player.volume = 0.5; // стартовая громкость
-
-if (playBtn) {
-  playBtn.addEventListener('click', () => {
-    if (isPlaying) {
-      player.pause();
-      playBtn.textContent = '▶️';
-    } else {
-      player.play().then(() => {
-        playBtn.textContent = '⏸️';
-      }).catch(err => console.log('Autoplay blocked:', err));
-    }
-    isPlaying = !isPlaying;
-  });
-}
-
-if (nextBtn) {
-  nextBtn.addEventListener('click', () => {
-    player.currentTime = 0;
-    player.play();
-    if (playBtn) playBtn.textContent = '⏸️';
-    isPlaying = true;
-  });
-}
 
 // --- Tabs setup and Analytics rendering ---
 function setupTabs() {
@@ -495,7 +529,7 @@ function renderAnalytics() {
     }
     top.forEach((it, idx) => {
       const li = document.createElement('li');
-      li.innerHTML = `${idx+1}. <strong>${escapeHtml(it.name)}</strong> — <span class="author-metric-value">${it.value}</span>`;
+    li.innerHTML = `${idx+1}. <strong>${escapeHtml(it.name)}</strong> — <span class="author-metric-value">${it.value}</span>`;
       listEl.appendChild(li);
     });
   }
@@ -556,39 +590,51 @@ function renderAnalytics() {
   }
 
   // render/update Chart.js chart
-  try {
-    const ctx = document.getElementById('analytics-chart');
-    if (ctx) {
-      if (analyticsChart) {
-        analyticsChart.data.labels = labels;
-        analyticsChart.data.datasets[0].data = counts;
-        analyticsChart.update();
-      } else if (window.Chart) {
-        analyticsChart = new Chart(ctx.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Tweets per day',
-              backgroundColor: 'rgba(111,227,209,0.9)',
-              borderColor: 'rgba(111,227,209,1)',
-               counts
-            }]
-          },
-          options: {
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              x: { grid: { display: false }, ticks: { maxRotation: 0, minRotation: 0 } },
-              y: { beginAtZero: true }
+try {
+  const ctx = document.getElementById('analytics-chart');
+  if (ctx) {
+    if (analyticsChart) {
+      analyticsChart.data.labels = labels;
+      analyticsChart.data.datasets[0].data = counts;
+      analyticsChart.update();
+    } else if (window.Chart) {
+      analyticsChart = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Tweets per day',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)', // Цвет заливки столбцов
+            borderColor: 'rgba(0, 255, 255, 1)',     // Цвет обводки столбцов
+             counts
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                maxRotation: 0,
+                minRotation: 0,
+                color: '#ffffff' // Цвет меток (дат) на оси X - ОСТАВИТЬ
+              }
+            },
+            y: {
+              beginAtZero: true
+              // ticks: { // <-- УБРАТЬ ЭТОТ БЛОК ИЛИ НЕ ДОБАВЛЯТЬ color СЮДА
+              //   color: '#ffffff' // Цвет меток (цифр) на оси Y - УДАЛИТЬ ЭТУ СТРОКУ
+              // }
             }
           }
-        });
-      }
+        }
+      });
     }
-  } catch (err) {
-    console.warn('Chart render failed', err);
   }
+} catch (err) {
+  console.warn('Chart render failed', err);
+}
 
   // initial render using default selects (if present)
   const authorMetricSelect = document.getElementById('author-metric-select');
@@ -638,21 +684,61 @@ function setupAnalyticsTabs() {
 // Инициализация табов
 try { setupTabs(); setupAnalyticsTabs(); } catch(e) { console.warn('Tabs init failed', e); }
 
-// --- Share User Stats on Twitter ---
-function shareUserOnTwitter(username) {
-    // Текст твита
-    const tweetText = `Check out @${username} on the Ritual Community Leaderboard! #RitualCommunity #Leaderboard`;
 
-    // Ссылка на ваш сайт (текущая страница)
-    const leaderboardUrl = window.location.href;
 
-    // Кодируем текст и URL
-    const encodedText = encodeURIComponent(tweetText);
-    const encodedUrl = encodeURIComponent(leaderboardUrl);
+// === SNOW EFFECT INITIALIZATION ===
+document.addEventListener('DOMContentLoaded', () => {
+    const snowContainer = document.getElementById('snowContainer');
+    if (!snowContainer) {
+        console.warn('Snow container element not found.');
+        return;
+    }
 
-    // Формируем ссылку Twitter Intent
-    const twitterIntentUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+    const snowflakeCount = 50; // Количество снежинок (можно регулировать плотность)
+    const containerRect = snowContainer.getBoundingClientRect();
 
-    // Открываем окно Twitter Intent
-    window.open(twitterIntentUrl, '_blank', 'width=600,height=400');
-}
+    for (let i = 0; i < snowflakeCount; i++) {
+        const flake = document.createElement('div');
+        flake.classList.add('snowflake');
+
+        // Случайные размеры снежинок (например, от 2 до 6 пикселей)
+        const size = Math.random() * 4 + 2;
+        flake.style.width = `${size}px`;
+        flake.style.height = `${size}px`;
+
+        // Случайная начальная позиция X
+        const startX = Math.random() * containerRect.width;
+        flake.style.left = `${startX}px`;
+        flake.style.top = `${Math.random() * -containerRect.height}px`; // Начинают падать сверху
+
+        // Случайные параметры анимации для разнообразия
+        const durationFall = Math.random() * 10 + 5; // Длительность падения (5-15 секунд)
+        const durationSway = Math.random() * 4 + 3;  // Длительность колебания (3-7 секунд)
+        const swayAmplitude = Math.random() * 30 + 10; // Амплитуда колебания (10-40px)
+
+        // Применяем анимацию
+        flake.style.animationDuration = `${durationFall}s, ${durationSway}s`;
+        // Для анимации sway используем transform с динамической амплитудой
+        // Это сложнее задать через style, лучше оставить базовую анимацию в CSS
+        // и генерировать уникальные ключевые кадры при необходимости.
+        // Для простоты используем CSS анимацию и немного модифицируем её поведение.
+        // Мы можем динамически создавать уникальные @keyframes, но это громоздко.
+        // Вместо этого, можно просто менять transform вручную через JS с requestAnimationFrame,
+        // но анимация CSS обычно плавнее.
+
+        // Простой способ добавить немного индивидуальности без динамических @keyframes:
+        // Случайная задержка начала анимации
+        flake.style.animationDelay = `${Math.random() * 5}s`; // Задержка от 0 до 5 секунд
+
+        snowContainer.appendChild(flake);
+    }
+
+    // Опционально: пересчитать позиции при изменении размера окна
+    window.addEventListener('resize', () => {
+        const newRect = snowContainer.getBoundingClientRect();
+        // Снежинки останутся на своих относительных позициях,
+        // но можно добавить логику перераспределения при необходимости.
+        // Для базового эффекта пересчёт не обязателен.
+    });
+});
+
