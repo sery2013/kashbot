@@ -129,7 +129,7 @@ body {
   color: #fff; /* белый цвет текста */
 }
 
-/* Полупрозрачные магические символы для stat-box */
+/* Полупрозрачные магические символы для stat-box (всегда видны) */
 .stat-box::before {
   content: "";
   position: absolute;
@@ -144,10 +144,35 @@ body {
   z-index: -1;
 }
 
+/* Эффект градиента с магическими символами при наведении */
+.stat-box:hover::before {
+  /* Добавляем градиентный оверлей */
+  background-image: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05)),
+    url('image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" x="50" font-size="80" text-anchor="middle" fill="white" opacity="0.15">✦✧✦✧</text></svg>');
+  background-blend-mode: overlay; /* Смешиваем градиент с фоном и символами */
+  opacity: 1; /* Убедимся, что эффект полноценно отображается */
+}
+
 .stat-box:hover {
   border-color: #fff; /* изменен цвет обводки при наведении */
   box-shadow: 0 0 25px rgba(255, 255, 255, 0.6); /* изменена тень при наведении */
   transform: scale(1.03);
+}
+
+/* Эффект градиента с магическими символами при нажатии */
+.stat-box:active::before {
+  /* Более насыщенный градиент и символы при нажатии */
+  background-image: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1)),
+    url('image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" x="50" font-size="80" text-anchor="middle" fill="white" opacity="0.25">✦✧✦✧</text></svg>');
+  background-blend-mode: overlay;
+  opacity: 1;
+}
+
+.stat-box:active {
+  transform: scale(0.98); /* Лёгкое сжатие при нажатии */
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); /* Усиленная тень при нажатии */
 }
 
 /* === SEARCH BOX === */
@@ -1178,3 +1203,4 @@ select option:checked {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: inline-block; /* Убедимся, что рамка применяется */
 }
+
