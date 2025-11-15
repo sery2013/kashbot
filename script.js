@@ -340,9 +340,6 @@ function toggleTweetsRow(tr, username) {
     tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
 }
 
-// Объявление функции дважды убрано, оставлена одна актуальная
-// function toggleTweetsRow(tr, username) { ... }
-
 // --- Обновляем обработчики клика ---
 function addUserClickHandlers() {
     const tbody = document.getElementById("leaderboard-body");
@@ -554,7 +551,7 @@ function renderAnalytics() {
               label: 'Tweets per day',
               backgroundColor: 'rgba(111,227,209,0.9)',
               borderColor: 'rgba(111,227,209,1)',
-              data: counts
+               counts
             }]
           },
           options: {
