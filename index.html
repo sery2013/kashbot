@@ -188,6 +188,36 @@
                     <ol id="top-posts-list" style="margin-top:12px;"></ol>
                 </div>
             </section>
+
+            <!-- === НОВОЕ: Тепловая карта активности и экспорт === -->
+            <section class="analytics-nested-content" id="analytics-heatmap-section" data-analytics-section="heatmap">
+                <div class="analytics-block" id="analytics-heatmap-block">
+                    <h3>Daily Activity Heatmap</h3>
+                    <div style="margin-top:16px;">
+                        <canvas id="heatmap-chart" height="200"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="analytics-nested-content" id="analytics-export-section" data-analytics-section="export">
+                <div class="analytics-block" id="analytics-export-block">
+                    <h3>Export Data for Research</h3>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;">
+                        <button class="export-btn" id="export-csv">📥 Export Leaderboard (CSV)</button>
+                        <button class="export-btn" id="export-json">📤 Export Tweets (JSON)</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Добавим вкладку для них в навигацию -->
+            <div class="analytics-nested-tabs">
+                <button class="analytics-tab-btn active" data-analytics-tab="averages">Avg metrics</button>
+                <button class="analytics-tab-btn" data-analytics-tab="authors">Top 10 authors</button>
+                <button class="analytics-tab-btn" data-analytics-tab="posts">Top 10 posts</button>
+                <button class="analytics-tab-btn" data-analytics-tab="heatmap">Activity Heatmap</button>
+                <button class="analytics-tab-btn" data-analytics-tab="export">Export Data</button>
+            </div>
+
         </div>
     </div>
 
