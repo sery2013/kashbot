@@ -53,10 +53,10 @@ async function fetchTweets() {
 
 // стартовые загрузки
 fetchTweets().then(() => fetchData());
-setInterval(() => {
-  fetchTweets();
-  fetchData();
-}, 3600000); // обновлять каждый час
+// setInterval(() => { // ЗАКОММЕНТИРОВАНО ИЛИ УБРАНО
+//   fetchTweets();
+//   fetchData();
+// }, 3600000); // обновлять каждый час
 
 // --- Normalize leaderboard data ---
 function normalizeData(json) {
@@ -669,6 +669,10 @@ try {
     postMetricSelect.addEventListener('change', e => renderTopPosts(e.target.value));
     postMetricSelect._bound = true;
   }
+
+  // --- ВЫЗОВ НОВЫХ ФУНКЦИЙ ---
+  renderHeatmap(); // Рендерим тепловую карту
+  setupExportButtons(); // Настраиваем кнопки экспорта
 }
 
 // Analytics time period filter
@@ -757,3 +761,191 @@ document.addEventListener('DOMContentLoaded', () => {
         // Для базового эффекта пересчёт не обязателен.
     });
 });
+
+// === НОВЫЕ ФУНКЦИИ: ТЕПЛОВАЯ КАРТА И ЭКСПОРТ ===
+
+// --- Render Heatmap ---
+function renderHeatmap() {
+    const canvas = document.getElementById('heatmap-chart');
+    if (!canvas) {
+        console.warn('Heatmap canvas element not found.');
+        return;
+    }
+
+    // Очищаем содержимое canvas (он будет использован как контейнер)
+    canvas.innerHTML = '';
+
+    // Подготовка данных
+    const hours = Array.from({ length: 24 }, (_, i) => i); // 0-23
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const activityMatrix = {}; // { day: { hour: count } }
+
+    allTweets.forEach(tweet => {
+        const created = tweet.tweet_created_at || tweet.created_at || tweet.created || null;
+        if (!created) return;
+        const date = new Date(created);
+        if (isNaN(date)) return;
+
+        const dayIndex = date.getUTCDay(); // 0 (Вс) - 6 (Сб)
+        const hour = date.getUTCHours(); // 0 - 23
+
+        const dayKey = days[dayIndex];
+        if (!activityMatrix[dayKey]) {
+            activityMatrix[dayKey] = {};
+        }
+        activityMatrix[dayKey][hour] = (activityMatrix[dayKey][hour] || 0) + 1;
+    });
+
+    // Найдем min/max для масштабирования цвета
+    let minCount = Infinity;
+    let maxCount = -Infinity;
+    for (const day in activityMatrix) {
+        for (const hour in activityMatrix[day]) {
+            const count = activityMatrix[day][hour];
+            if (count < minCount) minCount = count;
+            if (count > maxCount) maxCount = count;
+        }
+    }
+    if (minCount === Infinity) minCount = 0;
+    if (maxCount === -Infinity) maxCount = 0;
+
+    // Создаем HTML таблицу (Grid)
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = '60px repeat(24, 1fr)'; // Ширина для меток дней + 24 колонки
+    grid.style.gridTemplateRows = '30px repeat(7, 1fr)'; // Ширина для меток часов + 7 строк
+    grid.style.gap = '1px';
+    grid.style.width = '100%';
+    grid.style.height = '100%';
+
+    // Заголовки часов (0-23)
+    hours.forEach(hour => {
+        const header = document.createElement('div');
+        header.textContent = hour.toString();
+        header.style.display = 'flex';
+        header.style.alignItems = 'center';
+        header.style.justifyContent = 'center';
+        header.style.fontSize = '0.7rem';
+        header.style.color = '#fff';
+        header.style.background = 'transparent';
+        grid.appendChild(header);
+    });
+
+    // Заполняем строки для каждого дня
+    days.forEach(day => {
+        // Заголовок дня
+        const dayHeader = document.createElement('div');
+        dayHeader.textContent = day;
+        dayHeader.style.display = 'flex';
+        dayHeader.style.alignItems = 'center';
+        dayHeader.style.justifyContent = 'center';
+        dayHeader.style.fontSize = '0.8rem';
+        dayHeader.style.color = '#fff';
+        dayHeader.style.background = 'transparent';
+        grid.appendChild(dayHeader);
+
+        // Ячейки для каждого часа
+        hours.forEach(hour => {
+            const count = activityMatrix[day] ? activityMatrix[day][hour] || 0 : 0;
+            const cell = document.createElement('div');
+            cell.title = `${day} ${hour}:00 - ${count} posts`;
+
+            // Определяем цвет фона
+            let bgColor = 'rgba(47, 79, 79, 0.2)'; // Цвет по умолчанию, если нет данных
+            if (maxCount > minCount) {
+                // Интерполируем между 0.2 (темно) и 0.8 (светло) для прозрачности
+                const alpha = 0.2 + (0.6 * (count - minCount)) / (maxCount - minCount);
+                // Используем цвет, близкий к #2F4F4F, с изменяющейся прозрачностью
+                bgColor = `rgba(47, 79, 79, ${alpha.toFixed(2)})`;
+            } else if (maxCount > 0) {
+                // Если все значения одинаковы и > 0
+                bgColor = 'rgba(47, 79, 79, 0.8)';
+            }
+
+            cell.style.background = bgColor;
+            cell.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+            cell.style.borderRadius = '2px';
+            grid.appendChild(cell);
+        });
+    });
+
+    canvas.appendChild(grid);
+}
+
+// --- Export Functions ---
+function exportLeaderboardToCSV() {
+    if (!data || data.length === 0) {
+        console.warn('No leaderboard data to export.');
+        return;
+    }
+
+    // Заголовки
+    const headers = ['Username', 'Posts', 'Likes', 'Retweets', 'Comments', 'Views'];
+    let csvContent = headers.join(',') + '\n';
+
+    // Данные
+    data.forEach(row => {
+        const values = [
+            `"${row.username || ''}"`, // Экранируем кавычки
+            row.posts || 0,
+            row.likes || 0,
+            row.retweets || 0,
+            row.comments || 0,
+            row.views || 0
+        ];
+        csvContent += values.join(',') + '\n';
+    });
+
+    // Создаем Blob и ссылку для скачивания
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'leaderboard.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportTweetsToJSON() {
+    if (!allTweets || allTweets.length === 0) {
+        console.warn('No tweets data to export.');
+        return;
+    }
+
+    // Создаем Blob и ссылку для скачивания
+    const blob = new Blob([JSON.stringify(allTweets, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'all_tweets.json');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// --- Setup Export Buttons ---
+function setupExportButtons() {
+    const exportCsvBtn = document.getElementById('export-csv');
+    const exportJsonBtn = document.getElementById('export-json');
+
+    if (exportCsvBtn) {
+        exportCsvBtn.onclick = (e) => {
+            e.preventDefault(); // Предотвращаем любое стандартное поведение
+            exportLeaderboardToCSV();
+        };
+    } else {
+        console.warn('Export CSV button not found.');
+    }
+
+    if (exportJsonBtn) {
+        exportJsonBtn.onclick = (e) => {
+            e.preventDefault(); // Предотвращаем любое стандартное поведение
+            exportTweetsToJSON();
+        };
+    } else {
+        console.warn('Export JSON button not found.');
+    }
+}
