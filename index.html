@@ -18,19 +18,15 @@
           align-items: center;     /* центрирует содержимое по вертикали */
           background: #0d1117; /* фон, если изображение не загрузится */
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          /* Убираем внутренние отступы, чтобы картинка прилегала вплотную */
         }
 
         .banner-link {
           display: block;
           width: 1350px;   /* фиксированная ширина изображения */
           height: 100px;   /* фиксированная высота */
-          /* УБРАНО: text-decoration, color */
-          /* Добавляем изображение */
           background: url("https://i.yapx.ru/cInFv.png") no-repeat center center; /* <-- ССЫЛКА НА ИЗОБРАЖЕНИЕ БАННЕРА */
           background-size: 1350px 100px; /* точный размер изображения */
-          /* Курсор указывает на возможность клика */
-          cursor: pointer;
+          cursor: pointer; /* Курсор указывает на возможность клика */
         }
     </style>
 </head>
@@ -42,9 +38,7 @@
 
     <div class="background"></div>
 
-    <div class="header-fixed">
-        <h1>Ritual Community</h1>
-    </div>
+    <!-- УБРАН: <div class="header-fixed"> <h1>Ritual Community</h1> </div> -->
 
     <div class="container">
         <!-- === WELCOME SECTION === -->
