@@ -210,7 +210,10 @@ function renderTable() {
     const shareBtn = document.createElement("button");
     shareBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: block;"> <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.244 2.25H8.05l4.713 6.231zm-1.161 17.52h1.833L7.08 4.126H5.03z"/> </svg>`; // SVG иконка Twitter
     shareBtn.className = 'share-btn'; // Класс для стилей
-    shareBtn.title = `Share ${escapeHtml(name)}'s stats on Twitter`; // Подсказка при наведении
+    // --- ОБНОВЛЕНИЕ ПОДСКАЗКИ shareBtn В ЗАВИСИМОСТИ ОТ ЯЗЫКА ---
+    const shareBtnTitle = currentLang === 'en' ? `Share ${escapeHtml(name)}'s stats on Twitter` : `Поделиться статистикой ${escapeHtml(name)} в Twitter`;
+    shareBtn.title = shareBtnTitle; // Подсказка при наведении
+    // --- КОНЕЦ ОБНОВЛЕНИЯ ПОДСКАЗКИ ---
     shareBtn.onclick = function(e) {
         e.stopPropagation(); // ВАЖНО: Останавливаем всплытие, чтобы клик не сработал на строке таблицы
         shareUserOnTwitter(name); // Функция, которая откроет окно Twitter Intent
@@ -783,6 +786,7 @@ function setLanguage(lang) {
 
     // Обновляем текст на странице
     if (lang === 'en') {
+        // --- ОБНОВЛЕНИЕ ТЕКСТА В .welcome-section ---
         const h1 = document.querySelector('h1');
         if (h1) h1.textContent = 'WELCOME RITUALISTS!';
         const welcomeP1 = document.querySelector('.welcome-section p:nth-of-type(1)');
@@ -800,6 +804,7 @@ function setLanguage(lang) {
         const teamP = document.querySelector('.team-box p');
         if (teamP) teamP.innerHTML = 'Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>';
 
+        // --- ОБНОВЛЕНИЕ ТЕКСТА В ФИЛЬТРАХ И ЭЛЕМЕНТАХ LEADERBOARD ---
         const timeSelectOptions = document.querySelectorAll('#time-select option');
         if (timeSelectOptions.length >= 4) {
             timeSelectOptions[0].textContent = 'Last 7 days';
@@ -816,6 +821,13 @@ function setLanguage(lang) {
         const refreshBtn = document.getElementById('refresh-btn');
         if (refreshBtn) refreshBtn.textContent = '🔄 Refresh';
 
+        // --- ОБНОВЛЕНИЕ ТЕКСТА ВО ВКЛАДКАХ ---
+        const leaderboardTabBtn = document.querySelector('.tab-btn[data-tab="leaderboard"]');
+        if (leaderboardTabBtn) leaderboardTabBtn.textContent = 'Leaderboard';
+        const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="analytics"]');
+        if (analyticsTabBtn) analyticsTabBtn.textContent = 'Analytics';
+
+        // --- ОБНОВЛЕНИЕ ТЕКСТА В ANALYTICS ---
         const analyticsH2 = document.querySelector('#tab-analytics h2');
         if (analyticsH2) analyticsH2.textContent = 'Analytics';
         const analyticsTimeOptions = document.querySelectorAll('#analytics-time-select option');
@@ -825,7 +837,6 @@ function setLanguage(lang) {
             analyticsTimeOptions[2].textContent = 'Last 14 days';
             analyticsTimeOptions[3].textContent = 'Last 7 days';
         }
-
         const hourSelectOptions = document.querySelectorAll('#hour-select option');
         if (hourSelectOptions.length >= 25) { // Проверяем, что есть опции "All hours" и "0"-"23"
             hourSelectOptions[0].textContent = 'All hours';
@@ -848,6 +859,7 @@ function setLanguage(lang) {
         const exportJsonBtn = document.getElementById('export-json');
         if (exportJsonBtn) exportJsonBtn.textContent = 'Export JSON';
 
+        // --- ОБНОВЛЕНИЕ ЗАГОЛОВКОВ ТАБЛИЦЫ ---
         const headers = {
             'name-header': 'User',
             'posts-header': 'Posts',
@@ -861,7 +873,36 @@ function setLanguage(lang) {
             if (el) el.textContent = text;
         });
 
-    } else if (lang === 'ru') {
+        // --- ОБНОВЛЕНИЕ ТЕКСТА ФИЛЬТРОВ В ANALYTICS ---
+        const authorMetricOptions = document.querySelectorAll('#author-metric-select option');
+        if (authorMetricOptions.length >= 3) {
+            authorMetricOptions[0].textContent = 'Posts';
+            authorMetricOptions[1].textContent = 'Likes';
+            authorMetricOptions[2].textContent = 'Views';
+        }
+        const postMetricOptions = document.querySelectorAll('#post-metric-select option');
+        if (postMetricOptions.length >= 2) {
+            postMetricOptions[0].textContent = 'Likes';
+            postMetricOptions[1].textContent = 'Views';
+        }
+
+        // --- ОБНОВЛЕНИЕ ТЕКСТА ЭЛЕМЕНТОВ ВЛОЖЕННЫХ РАЗДЕЛОВ ANALYTICS ---
+        const avgMetricsH3 = document.querySelector('#analytics-averages-section h3');
+        if (avgMetricsH3) avgMetricsH3.textContent = 'Average metrics per user';
+        const heatmapH3 = document.querySelector('#heatmap-container').parentElement.querySelector('h3');
+        if (heatmapH3) heatmapH3.textContent = 'Activity Heatmap (Tweets by Day & Hour)';
+        const topAuthorsH3 = document.querySelector('#analytics-authors-section h3');
+        if (topAuthorsH3) topAuthorsH3.textContent = 'Top 10 authors';
+        const topPostsH3 = document.querySelector('#analytics-posts-section h3');
+        if (topPostsH3) topPostsH3.textContent = 'Top 10 posts';
+
+        const sortLabel1 = document.querySelector('#analytics-authors-section label[for="author-metric-select"]');
+        if (sortLabel1) sortLabel1.textContent = 'Sort by:';
+        const sortLabel2 = document.querySelector('#analytics-posts-section label[for="post-metric-select"]');
+        if (sortLabel2) sortLabel2.textContent = 'Sort by:';
+
+    } else if (lang === 'ru') { // --- ТО ЖЕ САМОЕ, НО НА РУССКОМ ЯЗЫКЕ ---
+        // --- ОБНОВЛЕНИЕ ТЕКСТА В .welcome-section ---
         const h1 = document.querySelector('h1');
         if (h1) h1.textContent = 'ДОБРО ПОЖАЛОВАТЬ, РИТУАЛИСТЫ!';
         const welcomeP1 = document.querySelector('.welcome-section p:nth-of-type(1)');
@@ -879,6 +920,7 @@ function setLanguage(lang) {
         const teamP = document.querySelector('.team-box p');
         if (teamP) teamP.innerHTML = 'Разработчик - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>';
 
+        // --- ОБНОВЛЕНИЕ ТЕКСТА В ФИЛЬТРАХ И ЭЛЕМЕНТАХ LEADERBOARD ---
         const timeSelectOptions = document.querySelectorAll('#time-select option');
         if (timeSelectOptions.length >= 4) {
             timeSelectOptions[0].textContent = 'Последние 7 дней';
@@ -895,6 +937,13 @@ function setLanguage(lang) {
         const refreshBtn = document.getElementById('refresh-btn');
         if (refreshBtn) refreshBtn.textContent = '🔄 Обновить';
 
+        // --- ОБНОВЛЕНИЕ ТЕКСТА ВО ВКЛАДКАХ ---
+        const leaderboardTabBtn = document.querySelector('.tab-btn[data-tab="leaderboard"]');
+        if (leaderboardTabBtn) leaderboardTabBtn.textContent = 'Лидерборд';
+        const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="analytics"]');
+        if (analyticsTabBtn) analyticsTabBtn.textContent = 'Аналитика';
+
+        // --- ОБНОВЛЕНИЕ ТЕКСТА В ANALYTICS ---
         const analyticsH2 = document.querySelector('#tab-analytics h2');
         if (analyticsH2) analyticsH2.textContent = 'Аналитика';
         const analyticsTimeOptions = document.querySelectorAll('#analytics-time-select option');
@@ -904,7 +953,6 @@ function setLanguage(lang) {
             analyticsTimeOptions[2].textContent = 'Последние 14 дней';
             analyticsTimeOptions[3].textContent = 'Последние 7 дней';
         }
-
         const hourSelectOptions = document.querySelectorAll('#hour-select option');
         if (hourSelectOptions.length >= 25) {
             hourSelectOptions[0].textContent = 'Все часы';
@@ -927,6 +975,7 @@ function setLanguage(lang) {
         const exportJsonBtn = document.getElementById('export-json');
         if (exportJsonBtn) exportJsonBtn.textContent = 'Экспорт JSON';
 
+        // --- ОБНОВЛЕНИЕ ЗАГОЛОВКОВ ТАБЛИЦЫ ---
         const headers = {
             'name-header': 'Пользователь',
             'posts-header': 'Посты',
@@ -939,9 +988,45 @@ function setLanguage(lang) {
             const el = document.getElementById(id);
             if (el) el.textContent = text;
         });
+
+        // --- ОБНОВЛЕНИЕ ТЕКСТА ФИЛЬТРОВ В ANALYTICS ---
+        const authorMetricOptions = document.querySelectorAll('#author-metric-select option');
+        if (authorMetricOptions.length >= 3) {
+            authorMetricOptions[0].textContent = 'Посты';
+            authorMetricOptions[1].textContent = 'Лайки';
+            authorMetricOptions[2].textContent = 'Просмотры';
+        }
+        const postMetricOptions = document.querySelectorAll('#post-metric-select option');
+        if (postMetricOptions.length >= 2) {
+            postMetricOptions[0].textContent = 'Лайки';
+            postMetricOptions[1].textContent = 'Просмотры';
+        }
+
+        // --- ОБНОВЛЕНИЕ ТЕКСТА ЭЛЕМЕНТОВ ВЛОЖЕННЫХ РАЗДЕЛОВ ANALYTICS ---
+        const avgMetricsH3 = document.querySelector('#analytics-averages-section h3');
+        if (avgMetricsH3) avgMetricsH3.textContent = 'Средние метрики на пользователя';
+        const heatmapH3 = document.querySelector('#heatmap-container').parentElement.querySelector('h3');
+        if (heatmapH3) heatmapH3.textContent = 'Тепловая карта активности (Твиты по дням и часам)';
+        const topAuthorsH3 = document.querySelector('#analytics-authors-section h3');
+        if (topAuthorsH3) topAuthorsH3.textContent = 'Топ-10 авторов';
+        const topPostsH3 = document.querySelector('#analytics-posts-section h3');
+        if (topPostsH3) topPostsH3.textContent = 'Топ-10 постов';
+
+        const sortLabel1 = document.querySelector('#analytics-authors-section label[for="author-metric-select"]');
+        if (sortLabel1) sortLabel1.textContent = 'Сортировать по:';
+        const sortLabel2 = document.querySelector('#analytics-posts-section label[for="post-metric-select"]');
+        if (sortLabel2) sortLabel2.textContent = 'Сортировать по:';
+
     }
 
-    // Обновление текста в блоках статистики
+    // --- ОБНОВЛЕНИЕ ТЕКСТА В БЛОКАХ СТАТИСТИКИ ---
+    // Это обновление текста в блоках статистики (Total Posts, Total Users, Total Views, Avg Posts и т.д.)
+    // вынесено в отдельную функцию, чтобы она вызывалась как при смене языка, так и при обновлении данных
+    updateStatsTexts(lang);
+}
+
+// --- ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ОБНОВЛЕНИЯ ТЕКСТА БЛОКОВ СТАТИСТИКИ ---
+function updateStatsTexts(lang) {
     const totalPostsEl = document.getElementById('total-posts');
     if (totalPostsEl) {
         const currentText = totalPostsEl.textContent;
