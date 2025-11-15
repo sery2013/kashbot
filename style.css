@@ -1144,5 +1144,37 @@ select option:checked {
 }
 
 
+/* === Стили для цифр (метрик) в Top 10 authors и Top 10 posts === */
+
+/* Для Top 10 posts (.top-post-item .metric) */
+.top-post-item .meta .metric {
+  /* Добавляем прозрачную рамку */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Белая рамка с 30% непрозрачности */
+  /* Добавляем немного фона (можно оставить прозрачным, если не нужно) */
+  background: rgba(255, 255, 255, 0.1); /* Белый фон с 10% непрозрачности */
+  /* Делаем отступы и скругления */
+  padding: 6px 8px;
+  border-radius: 7.5%; /* Скругление 5-10% */
+  /* Выравнивание и шрифт */
+  font-weight: 700;
+  /* Можно добавить тень */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Для Top 10 authors (предполагаемый селектор, может отличаться, если в .top-authors-list li не используется такой же шаблон) */
+#top-authors-list li strong + div, /* Если метрика идет после <strong> в отдельном div */
+#top-authors-list li span.metric, /* Если метрика обернута в span с классом metric */
+#top-authors-list li div:last-child /* Если метрика в последнем div внутри li */
+{
+  /* Аналогичные стили */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Белая рамка с 30% непрозрачности */
+  background: rgba(255, 255, 255, 0.1); /* Белый фон с 10% непрозрачности */
+  padding: 6px 8px;
+  border-radius: 7.5%; /* Скругление 5-10% */
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Важно: display:inline-block или inline-flex, если элемент не блочный */
+  display: inline-block;
+}
 
 
