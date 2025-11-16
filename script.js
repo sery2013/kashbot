@@ -11,6 +11,9 @@ let analyticsChart = null;
 let analyticsPeriod = "all"; // filter for analytics: 'all', '7', '14', '30'
 let analyticsHourFilter = "all"; // filter for heatmap hour: 'all', '0', '1', ... '23'
 
+// --- НОВАЯ ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ ЯЗЫКА ---
+let currentLang = 'en'; // по умолчанию en, будет изменён при загрузке
+
 // --- Fetch leaderboard data ---
 async function fetchData() {
   try {
@@ -189,7 +192,10 @@ function renderTable() {
     const shareBtn = document.createElement("button");
     shareBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: block;"> <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.244 2.25H8.05l4.713 6.231zm-1.161 17.52h1.833L7.08 4.126H5.03z"/> </svg>`; // SVG иконка Twitter
     shareBtn.className = 'share-btn'; // Класс для стилей
-    shareBtn.title = `Share ${escapeHtml(name)}'s stats on Twitter`; // Подсказка при наведении
+    // --- ОБНОВЛЕНИЕ ПОДСКАЗКИ shareBtn В ЗАВИСИМОСТИ ОТ ЯЗЫКА ---
+    const shareBtnTitle = currentLang === 'en' ? `Share ${escapeHtml(name)}'s stats on Twitter` : `Поделиться статистикой ${escapeHtml(name)} в Twitter`;
+    shareBtn.title = shareBtnTitle; // Подсказка при наведении
+    // --- КОНЕЦ ОБНОВЛЕНИЯ ПОДСКАЗКИ ---
     shareBtn.onclick = function(e) {
         e.stopPropagation(); // ВАЖНО: Останавливаем всплытие, чтобы клик не сработал на строке таблицы
         shareUserOnTwitter(name); // Функция, которая откроет окно Twitter Intent
@@ -844,7 +850,254 @@ function setupAnalyticsTabs() {
 // Инициализация табов
 try { setupTabs(); setupAnalyticsTabs(); } catch(e) { console.warn('Tabs init failed', e); }
 
+// === LANGUAGE SWITCHER ===
+function setLanguage(lang) {
+    currentLang = lang;
+    // Обновляем активные классы кнопок переключателя
+    const langEn = document.getElementById('lang-en');
+    const langRu = document.getElementById('lang-ru');
+    if (langEn) {
+        langEn.classList.toggle('active', lang === 'en');
+        langEn.classList.toggle('inactive', lang !== 'en'); // Опционально для стилей
+    }
+    if (langRu) {
+        langRu.classList.toggle('active', lang === 'ru');
+        langRu.classList.toggle('inactive', lang !== 'ru'); // Опционально для стилей
+    }
 
+    // --- ОБНОВЛЕНИЕ ТЕКСТА В .welcome-section ---
+    const h1 = document.querySelector('h1');
+    if (h1) h1.textContent = lang === 'en' ? 'WELCOME RITUALISTS!' : 'ДОБРО ПОЖАЛОВАТЬ, РИТУАЛИСТЫ!';
+
+    const welcomeP1 = document.querySelector('.welcome-section p:nth-of-type(1)');
+    if (welcomeP1) welcomeP1.textContent = lang === 'en' ? 'This leaderboard is generated based on all posts in the ' : 'Этот лидерборд генерируется на основе всех постов в сообществе ';
+
+    const welcomeP2 = document.querySelector('.welcome-section p:nth-of-type(2)');
+    if (welcomeP2) welcomeP2.textContent = lang === 'en' ? 'If your posts are not published through ' : 'Если ваши посты не публикуются через ';
+
+    const welcomeP3 = document.querySelector('.welcome-section p:nth-of-type(3)');
+    if (welcomeP3) welcomeP3.textContent = lang === 'en' ? 'By clicking on any participant, you can view their works directly on the website.' : 'Щёлкнув по любому участнику, вы можете просмотреть его работы на сайте.';
+
+    const welcomeP4 = document.querySelector('.welcome-section p:nth-of-type(4)');
+    if (welcomeP4) welcomeP4.textContent = lang === 'en' ? 'By clicking on any metric (for example, views), you can filter by it.' : 'Щёлкнув по любой метрике (например, просмотры), вы можете отфильтровать по ней.';
+
+    const updateInfoP = document.querySelector('.welcome-section p:nth-of-type(5)');
+    if (updateInfoP) updateInfoP.innerHTML = lang === 'en' ? '<b><span style="color:#90EE90;">Updates every 2 days</span></b>' : '<b><span style="color:#90EE90;">Обновляется каждые 2 дня</span></b>';
+
+    const supportP = document.querySelector('.welcome-section p:nth-of-type(7)');
+    if (supportP) supportP.textContent = lang === 'en' ? 'Support us on Twitter!' : 'Поддержите нас в Twitter!';
+
+    const teamP = document.querySelector('.team-box p');
+    if (teamP) teamP.innerHTML = lang === 'en' ? 'Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>' : 'Разработчик - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a>';
+
+
+    // --- ОБНОВЛЕНИЕ ТЕКСТА В ФИЛЬТРАХ И ЭЛЕМЕНТАХ LEADERBOARD ---
+    const timeSelectOptions = document.querySelectorAll('#time-select option');
+    if (timeSelectOptions.length >= 4) {
+        timeSelectOptions[0].textContent = lang === 'en' ? 'Last 7 days' : 'Последние 7 дней';
+        timeSelectOptions[1].textContent = lang === 'en' ? 'Last 14 days' : 'Последние 14 дней';
+        timeSelectOptions[2].textContent = lang === 'en' ? 'Last 30 days' : 'Последние 30 дней';
+        timeSelectOptions[3].textContent = lang === 'en' ? 'All time' : 'Все время';
+    }
+
+    const searchInput = document.getElementById('search');
+    if (searchInput) searchInput.placeholder = lang === 'en' ? 'Search user...' : 'Поиск пользователя...';
+
+    const prevPageBtn = document.getElementById('prev-page');
+    if (prevPageBtn) prevPageBtn.textContent = lang === 'en' ? 'Previous' : 'Назад';
+
+    const nextPageBtn = document.getElementById('next-page');
+    if (nextPageBtn) nextPageBtn.textContent = lang === 'en' ? 'Next' : 'Вперёд';
+
+    // Обновление текста кнопки Refresh (если она есть)
+    // УДАЛЕНО: Кнопка Refresh больше не поддерживается в этом скрипте
+
+
+    // --- ОБНОВЛЕНИЕ ТЕКСТА ВО ВКЛАДКАХ ---
+    const leaderboardTabBtn = document.querySelector('.tab-btn[data-tab="leaderboard"]');
+    if (leaderboardTabBtn) leaderboardTabBtn.textContent = lang === 'en' ? 'Leaderboard' : 'Лидерборд';
+
+    const analyticsTabBtn = document.querySelector('.tab-btn[data-tab="analytics"]');
+    if (analyticsTabBtn) analyticsTabBtn.textContent = lang === 'en' ? 'Analytics' : 'Аналитика';
+
+
+    // --- ОБНОВЛЕНИЕ ТЕКСТА В ANALYTICS ---
+    const analyticsH2 = document.querySelector('#tab-analytics h2');
+    if (analyticsH2) analyticsH2.textContent = lang === 'en' ? 'Analytics' : 'Аналитика';
+
+    const analyticsTimeOptions = document.querySelectorAll('#analytics-time-select option');
+    if (analyticsTimeOptions.length >= 4) {
+        analyticsTimeOptions[0].textContent = lang === 'en' ? 'All time' : 'Все время';
+        analyticsTimeOptions[1].textContent = lang === 'en' ? 'Last 30 days' : 'Последние 30 дней';
+        analyticsTimeOptions[2].textContent = lang === 'en' ? 'Last 14 days' : 'Последние 14 дней';
+        analyticsTimeOptions[3].textContent = lang === 'en' ? 'Last 7 days' : 'Последние 7 дней';
+    }
+
+    const hourSelectOptions = document.querySelectorAll('#hour-select option');
+    if (hourSelectOptions.length >= 25) { // Проверяем, что есть опции "All hours" и "0"-"23"
+        hourSelectOptions[0].textContent = lang === 'en' ? 'All hours' : 'Все часы';
+        for (let i = 1; i <= 24; i++) {
+            if (hourSelectOptions[i]) {
+                hourSelectOptions[i].textContent = `${i - 1}:00`;
+            }
+        }
+    }
+
+    const avgMetricsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="averages"]');
+    if (avgMetricsBtn) avgMetricsBtn.textContent = lang === 'en' ? 'Avg metrics' : 'Средние метрики';
+
+    const topAuthorsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="authors"]');
+    if (topAuthorsBtn) topAuthorsBtn.textContent = lang === 'en' ? 'Top 10 authors' : 'Топ-10 авторов';
+
+    const topPostsBtn = document.querySelector('.analytics-tab-btn[data-analytics-tab="posts"]');
+    if (topPostsBtn) topPostsBtn.textContent = lang === 'en' ? 'Top 10 posts' : 'Топ-10 постов';
+
+    const exportCsvBtn = document.getElementById('export-csv');
+    if (exportCsvBtn) exportCsvBtn.textContent = lang === 'en' ? 'Export CSV' : 'Экспорт CSV';
+
+    const exportJsonBtn = document.getElementById('export-json');
+    if (exportJsonBtn) exportJsonBtn.textContent = lang === 'en' ? 'Export JSON' : 'Экспорт JSON';
+
+    // --- ОБНОВЛЕНИЕ ЗАГОЛОВКОВ ТАБЛИЦЫ ---
+    const headers = {
+        'name-header': { en: 'User', ru: 'Пользователь' },
+        'posts-header': { en: 'Posts', ru: 'Посты' },
+        'likes-header': { en: 'Likes', ru: 'Лайки' },
+        'retweets-header': { en: 'Retweets', ru: 'Ретвиты' },
+        'comments-header': { en: 'Comments', ru: 'Комментарии' },
+        'views-col-header': { en: 'Views', ru: 'Просмотры' }
+    };
+    Object.entries(headers).forEach(([id, texts]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = texts[lang];
+    });
+
+    // --- ОБНОВЛЕНИЕ ТЕКСТА ФИЛЬТРОВ В ANALYTICS ---
+    const authorMetricOptions = document.querySelectorAll('#author-metric-select option');
+    if (authorMetricOptions.length >= 3) {
+        authorMetricOptions[0].textContent = lang === 'en' ? 'Posts' : 'Посты';
+        authorMetricOptions[1].textContent = lang === 'en' ? 'Likes' : 'Лайки';
+        authorMetricOptions[2].textContent = lang === 'en' ? 'Views' : 'Просмотры';
+    }
+    const postMetricOptions = document.querySelectorAll('#post-metric-select option');
+    if (postMetricOptions.length >= 2) {
+        postMetricOptions[0].textContent = lang === 'en' ? 'Likes' : 'Лайки';
+        postMetricOptions[1].textContent = lang === 'en' ? 'Views' : 'Просмотры';
+    }
+
+    // --- ОБНОВЛЕНИЕ ТЕКСТА ЭЛЕМЕНТОВ ВЛОЖЕННЫХ РАЗДЕЛОВ ANALYTICS ---
+    const avgMetricsH3 = document.querySelector('#analytics-averages-section h3');
+    if (avgMetricsH3) avgMetricsH3.textContent = lang === 'en' ? 'Average metrics per user' : 'Средние метрики на пользователя';
+
+    const heatmapH3 = document.querySelector('#heatmap-container').parentElement.querySelector('h3');
+    if (heatmapH3) heatmapH3.textContent = lang === 'en' ? 'Activity Heatmap (Tweets by Day & Hour)' : 'Тепловая карта активности (Твиты по дням и часам)';
+
+    const topAuthorsH3 = document.querySelector('#analytics-authors-section h3');
+    if (topAuthorsH3) topAuthorsH3.textContent = lang === 'en' ? 'Top 10 authors' : 'Топ-10 авторов';
+
+    const topPostsH3 = document.querySelector('#analytics-posts-section h3');
+    if (topPostsH3) topPostsH3.textContent = lang === 'en' ? 'Top 10 posts' : 'Топ-10 постов';
+
+    const sortLabel1 = document.querySelector('#analytics-authors-section label[for="author-metric-select"]');
+    if (sortLabel1) sortLabel1.textContent = lang === 'en' ? 'Sort by:' : 'Сортировать по:';
+
+    const sortLabel2 = document.querySelector('#analytics-posts-section label[for="post-metric-select"]');
+    if (sortLabel2) sortLabel2.textContent = lang === 'en' ? 'Sort by:' : 'Сортировать по:';
+
+    // --- ОБНОВЛЕНИЕ ТЕКСТА В БЛОКАХ СТАТИСТИКИ ---
+    // Функция обновления текста в блоках статистики (Total Posts, Avg Posts и т.д.)
+    // Извлекаем числовые значения перед обновлением текста
+    const totalPostsEl = document.getElementById('total-posts');
+    if (totalPostsEl) {
+        const currentText = totalPostsEl.textContent;
+        // Извлекаем значение после ":"
+        const value = currentText.split(': ')[1] || '0';
+        totalPostsEl.textContent = lang === 'en' ? `Total Posts: ${value}` : `Всего Постов: ${value}`;
+    }
+
+    const totalUsersEl = document.getElementById('total-users');
+    if (totalUsersEl) {
+        const currentText = totalUsersEl.textContent;
+        const value = currentText.split(': ')[1] || '0';
+        totalUsersEl.textContent = lang === 'en' ? `Total Users: ${value}` : `Всего Пользователей: ${value}`;
+    }
+
+    const totalViewsEl = document.getElementById('total-views');
+    if (totalViewsEl) {
+        const currentText = totalViewsEl.textContent;
+        const value = currentText.split(': ')[1] || '0';
+        totalViewsEl.textContent = lang === 'en' ? `Total Views: ${value}` : `Всего Просмотров: ${value}`;
+    }
+
+    const avgPostsEl = document.getElementById('avg-posts');
+    if (avgPostsEl) {
+        const currentText = avgPostsEl.textContent;
+        const value = currentText.split(': ')[1] || '0.00';
+        avgPostsEl.textContent = lang === 'en' ? `Avg Posts: ${value}` : `Среднее Постов: ${value}`;
+    }
+
+    const avgLikesEl = document.getElementById('avg-likes');
+    if (avgLikesEl) {
+        const currentText = avgLikesEl.textContent;
+        const value = currentText.split(': ')[1] || '0.00';
+        avgLikesEl.textContent = lang === 'en' ? `Avg Likes: ${value}` : `Среднее Лайков: ${value}`;
+    }
+
+    const avgViewsEl = document.getElementById('avg-views');
+    if (avgViewsEl) {
+        const currentText = avgViewsEl.textContent;
+        const value = currentText.split(': ')[1] || '0.00';
+        avgViewsEl.textContent = lang === 'en' ? `Avg Views: ${value}` : `Среднее Просмотров: ${value}`;
+    }
+}
+
+// --- ОБНОВЛЕНИЕ ПОДСКАЗКИ КНОПКИ "ПОДЕЛИТЬСЯ" В renderTable ---
+// Найдите функцию renderTable и измените строку с shareBtn.title следующим образом:
+/*
+// ВНУТРИ renderTable, ВНУТРИ ЦИКЛА pageData.forEach(stats => { ...
+// ...
+const shareBtn = document.createElement("button");
+// ...
+// --- ИЗМЕНЕНИЕ СЛЕДУЮЩЕЙ СТРОКИ ---
+shareBtn.title = currentLang === 'en' ? `Share ${escapeHtml(name)}'s stats on Twitter` : `Поделиться статистикой ${escapeHtml(name)} в Twitter`;
+// ...
+*/
+// Эта строка уже внесена в renderTable выше.
+
+// --- ОБРАБОТЧИКИ КЛИКОВ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ЯЗЫКА ---
+document.addEventListener('DOMContentLoaded', () => {
+    const langEn = document.getElementById('lang-en');
+    const langRu = document.getElementById('lang-ru');
+
+    if (langEn) {
+        langEn.addEventListener('click', () => {
+            if (currentLang !== 'en') {
+                setLanguage('en');
+                localStorage.setItem('lang', 'en'); // Сохраняем язык в localStorage
+            }
+        });
+    }
+    if (langRu) {
+        langRu.addEventListener('click', () => {
+            if (currentLang !== 'ru') {
+                setLanguage('ru');
+                localStorage.setItem('lang', 'ru'); // Сохраняем язык в localStorage
+            }
+        });
+    }
+
+    // --- ЗАГРУЗКА СОХРАНЕННОГО ЯЗЫКА ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ---
+    const savedLang = localStorage.getItem('lang');
+    if (savedLang && (savedLang === 'en' || savedLang === 'ru')) {
+        setLanguage(savedLang);
+    } else {
+        // Если язык не сохранен, можно определить по языку браузера (опционально)
+        // const browserLang = navigator.language.startsWith('ru') ? 'ru' : 'en';
+        // setLanguage(browserLang);
+        // Но по умолчанию у нас en, если ничего не сохранено
+        setLanguage('en');
+    }
+});
 
 // === SNOW EFFECT INITIALIZATION ===
 document.addEventListener('DOMContentLoaded', () => {
