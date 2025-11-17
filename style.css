@@ -1529,25 +1529,3 @@ select option:checked {
 }
 
 
-/* === ЦЕНТРИРОВАНИЕ ТЕКСТА ВНУТРИ ЗАГОЛОВКА "User" === */
-#name-header {
-  /* Убедимся, что элемент имеет правильные размеры и отступы */
-  padding: 14px;
-  /* Принудительно центрируем текст */
-  text-align: center !important;
-  /* Добавляем display: flex для надежного центрирования */
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  /* Если есть стрелка сортировки, она должна быть частью этого контейнера */
-  gap: 5px; /* Отступ между текстом и стрелкой */
-}
-
-/* Стили для стрелки сортировки, чтобы она была правильно выровнена */
-#name-header .sort-arrow {
-  margin: 0;
-  /* Цвет стрелки */
-  color: #6fe3d1;
-  /* Размер шрифта стрелки */
-  font-size: 0.9rem;
-}
