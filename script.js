@@ -1,13 +1,3 @@
-Хорошо, я внесу необходимые изменения в ваш `script.js`, чтобы:
-
-1.  **Исправить стиль графика "Tweets per day"** на белую столбчатую диаграмму с сеткой, как на скриншоте.
-2.  **Отцентрировать заголовок "User"** в таблице лидерборда.
-3.  **Исправить ошибку в определении `data`** в `renderAnalytics` (лишняя запятая).
-4.  **Исправить опечатку** в `renderAnalytics` для `authorMetricOptions[1].textContent`.
-
-Вот обновлённый `script.js`:
-
-```javascript
 // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
 let rawData = [];
 let data = [];
@@ -20,9 +10,6 @@ let timeFilter = "all";
 let analyticsChart = null;
 let analyticsPeriod = "all"; // filter for analytics: 'all', '7', '14', '30'
 let analyticsHourFilter = "all"; // filter for heatmap hour: 'all', '0', '1', ... '23'
-
-// - НОВАЯ ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ ЯЗЫКА -
-let currentLang = 'en'; // по умолчанию en, будет изменён при загрузке
 
 // - Fetch leaderboard data -
 async function fetchData() {
@@ -690,9 +677,34 @@ function renderAnalytics() {
       return;
     }
     top.forEach((it, idx) => {
+      // --- НАЧАЛО ИЗМЕНЕНИЯ: Структура элемента списка для "Top 10 authors" ---
       const li = document.createElement('li');
-    li.innerHTML = `${idx+1}. <strong>${escapeHtml(it.name)}</strong> — <span class="author-metric-value">${it.value}</span>`;
+      li.className = 'top-author-item'; // Класс для нового CSS
+
+      // Собираем строку с иконками и цифрами
+      const postsStr = `<span class="metric-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline; margin-right: 2px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87.69 6.89L12 21.5l-5.69-1.48.69-6.89-5-4.87 6.81-1.01L12 2z"/></svg>${it.stats.posts} posts</span>`;
+      const likesStr = `<span class="metric-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline; margin-right: 2px;"><path d="M12 21.35l-1.45-1.45C5.4 15.56 2 12.12 2 8.5c0-1.74.67-3.35 1.96-4.64A23.85 23.85 0 0112 0c8.25 0 15.5 5.5 15.5 15.5 0 1.74-.67 3.35-1.96 4.64l-1.45 1.45C19.5 21.35 16.5 24 12 24z"/></svg>${it.stats.likes} likes</span>`;
+      const retweetsStr = `<span class="metric-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline; margin-right: 2px;"><path d="M17 7h-4v2h4v6h-4v2h4v2H7v-2h4V9H7V7h10z"/></svg>${it.stats.retweets} retweets</span>`;
+      const viewsStr = `<span class="metric-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline; margin-right: 2px;"><path d="M12 6c3.76 0 7.08 2.06 9.07 5.33 1.99 3.27 1.99 7.24 0 10.51C19.08 25.14 15.76 27.2 12 27.2s-7.08-2.06-9.07-5.33c-1.99-3.27-1.99-7.24 0-10.51C4.92 8.06 8.24 6 12 6zm0 2c-1.66 0-3.18.7-4.25 1.81L12 14l4.25-4.19C15.18 8.7 13.66 8 12 8zm0 12c1.66 0 3.18-.7 4.25-1.81L12 18l-4.25 4.19C8.82 23.3 10.34 24 12 24z"/></svg>${it.stats.views} views</span>`;
+
+      // Формируем содержимое <li>
+      li.innerHTML = `
+          <div class="author-info">
+              <span class="author-rank">${idx + 1}.</span>
+              <strong class="author-name">${escapeHtml(it.name)}</strong>
+              <div class="author-metrics">
+                  ${postsStr}
+                  ${likesStr}
+                  ${retweetsStr}
+                  ${viewsStr}
+              </div>
+          </div>
+          <div class="author-sort-value">
+              ${it.value} ${metric === 'posts' ? 'posts' : metric === 'likes' ? 'likes' : 'views'}
+          </div>
+      `;
       listEl.appendChild(li);
+      // --- КОНЕЦ ИЗМЕНЕНИЯ ---
     });
   }
 
@@ -768,7 +780,7 @@ try {
             label: 'Tweets per day',
             backgroundColor: 'rgba(255, 255, 255, 0.9)', // Цвет заливки столбцов
             borderColor: 'rgba(255, 255, 255, 1)',     // Цвет обводки столбцов
-            data: counts // <-- ИСПРАВЛЕНО: убрана лишняя запятая перед 'counts'
+             counts // <-- ИСПРАВЛЕНО: убрана лишняя запятая перед 'counts'
           }]
         },
         options: {
@@ -866,6 +878,9 @@ function setupAnalyticsTabs() {
 try { setupTabs(); setupAnalyticsTabs(); } catch(e) { console.warn('Tabs init failed', e); }
 
 // === LANGUAGE SWITCHER ===
+// УБЕДИТЕСЬ, ЧТО ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ currentLang ОПРЕДЕЛЕНА
+// let currentLang = 'en'; // Должна быть в начале файла
+
 function setLanguage(lang) {
     currentLang = lang;
     // Обновляем активные классы кнопок переключателя
@@ -1179,6 +1194,3 @@ document.addEventListener('DOMContentLoaded', () => {
         // Для базового эффекта пересчёт не обязателен.
     });
 });
-```
-
-**Важно:** Эти изменения **не включают** добавление **кнопки "Обновить данные вручную** (`refresh-btn`) или **индикатора последнего обновления** (`last-updated`), так как вы просили удалить их.
