@@ -1405,11 +1405,6 @@ select option:checked {
 }
 
 
-/* === ЦЕНТРИРОВАНИЕ ЗАГОЛОВКА "User" (с принудительным применением) === */
-#name-header {
-  text-align: center !important;
-}
-
 
 /* === SEARCH AND TIME FILTER IN ONE LINE === */
 
@@ -1535,3 +1530,10 @@ select option:checked {
 
 
 
+/* === ЦЕНТРИРОВАНИЕ ЗАГОЛОВКА "User" (Принудительное) === */
+#name-header {
+    text-align: center !important;
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+}
