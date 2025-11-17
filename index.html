@@ -98,18 +98,23 @@
             <p>By clicking on any metric (for example, views), you can filter by it.</p>
             <!-- --- ИЗМЕНЕНИЕ: Добавлен span id="last-updated" --- -->
             <p><b><span style="color:#90EE90;">Updated every 2 days</span> <span id="last-updated" style="color: #a9ddd3; font-size: 0.9rem;">Last updated: —</span></b></p>
+            <!-- ... предыдущий код до .team-box ... -->
             <p>Support us on Twitter!</p>
 
-            <div class="team-box">
-                <p>Follow Twitter Dev - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a></p>
-            </div>
-        </div>
+            <!-- Новый объединённый блок -->
+            <div class="combined-bottom-block">
+                <div class="team-box">
+                    <p>Follow Developer - <a href="https://x.com/kaye_moni" target="_blank">@kaye_moni</a></p>
+                </div>
 
-        <!-- Tabs (перемещены под .team-box) -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="leaderboard">Leaderboard</button>
-            <button class="tab-btn" data-tab="analytics">Analytics</button>
-        </div>
+                <!-- Tabs (теперь внутри нового блока) -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="leaderboard">Leaderboard</button>
+                    <button class="tab-btn" data-tab="analytics">Analytics</button>
+                </div>
+            </div>
+        </div> <!-- Закрывающий тег div для .welcome-section или .container -->
+<!-- ... следующий код ... -->
 
         <!-- wrapper for leaderboard content so we can toggle visibility -->
         <div id="leaderboard-wrapper" class="tab-content active">
@@ -301,3 +306,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
