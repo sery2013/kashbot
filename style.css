@@ -1405,9 +1405,9 @@ select option:checked {
 }
 
 
-/* === ЦЕНТРИРОВАНИЕ ЗАГОЛОВКА "User" === */
-th#name-header {
-  text-align: center;
+/* === ЦЕНТРИРОВАНИЕ ЗАГОЛОВКА "User" (с принудительным применением) === */
+#name-header {
+  text-align: center !important;
 }
 
 
@@ -1532,5 +1532,6 @@ th#name-header {
     box-shadow: 0 6px 18px rgba(111,227,209,0.07);
     outline: none;
 }
+
 
 
