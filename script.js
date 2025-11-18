@@ -1213,3 +1213,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+"welcome-title": "WELCOME RITUALISTS!",
+"welcome-desc-1": "This leaderboard is generated based on all posts in the <a href='https://x.com/i/communities/1896991026272723220' target='_blank'>Ritual Community</a>.",
+"welcome-desc-2": "If your posts are not published through <a href='https://x.com/i/communities/1896991026272723220' target='_blank'>Ritual Community</a>, they will not be visible on the leaderboard.",
+"welcome-desc-3": "By clicking on any participant, you can view their works directly on the website.",
+"welcome-desc-4": "By clicking on any metric (for example, views), you can filter by it.",
+"welcome-update-text": "Updated every 2 days",
+"support-us-text": "Support us on Twitter!",
+"follow-dev-text": "Follow Developer - <a href='https://x.com/kaye_moni' target='_blank' style='color: white; text-decoration: underline;'>@kaye_moni</a>",
+  "welcome-title": "ДОБРО ПОЖАЛОВАТЬ, РИТУАЛИСТЫ!",
+"welcome-desc-1": "Этот лидерборд генерируется на основе всех постов в <a href='https://x.com/i/communities/1896991026272723220' target='_blank'>Ritual Community</a>.",
+"welcome-desc-2": "Если ваши посты не опубликованы через <a href='https://x.com/i/communities/1896991026272723220' target='_blank'>Ritual Community</a>, они не будут отображаться на лидерборде.",
+"welcome-desc-3": "Нажав на любого участника, вы можете просматривать его работы прямо на сайте.",
+"welcome-desc-4": "Нажав на любую метрику (например, просмотры), вы можете фильтровать по ней.",
+"welcome-update-text": "Обновляется каждые 2 дня",
+"support-us-text": "Поддержите нас в Twitter!",
+"follow-dev-text": "Подписывайтесь на разработчика - <a href='https://x.com/kaye_moni' target='_blank' style='color: white; text-decoration: underline;'>@kaye_moni</a>",
