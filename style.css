@@ -1595,3 +1595,9 @@ select option:checked {
     font-size: 2rem; /* Увеличивает размер заголовка */
     text-align: center; /* Заголовок можно оставить по центру, как акцент */
 }
+
+
+a {
+    color: white;
+    text-decoration: underline; /* Опционально: добавляет подчеркивание */
+}
