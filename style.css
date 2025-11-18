@@ -1629,34 +1629,3 @@ a:link, a:visited {
 }
 
 
-
-/* === СТИЛИ ДЛЯ НОВОГО ОБЪЕДИНЁННОГО ЗАГОЛОВКА === */
-.new-combined-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    margin: 15px 0; /* Отступ сверху/снизу */
-    flex-wrap: wrap; /* Позволяет переносить на новую строку при маленьком экране */
-}
-
-.dev-and-update-info {
-    display: flex;
-    align-items: center;
-    gap: 15px; /* Расстояние между "Follow Dev" и "Last Updated" */
-    font-size: 0.9rem;
-    color: #a9ddd3;
-    white-space: nowrap; /* Помогает избежать нежелательного переноса */
-}
-
-/* Для мобильных устройств: выравниваем всё по центру при переносе */
-@media (max-width: 600px) {
-    .new-combined-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .dev-and-update-info {
-        justify-content: center;
-        gap: 10px;
-    }
-}
