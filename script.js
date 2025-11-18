@@ -11,7 +11,6 @@ let analyticsChart = null;
 let analyticsPeriod = "all"; // filter for analytics: 'all', '7', '14', '30'
 let analyticsHourFilter = "all"; // filter for heatmap hour: 'all', '0', '1', ... '23'
 let currentLang = 'en'; // Глобальная переменная для текущего языка
-
 // - Fetch leaderboard data -
 async function fetchData() {
   try {
@@ -27,7 +26,6 @@ async function fetchData() {
     console.error("Failed to fetch leaderboard:", err);
   }
 }
-
 // - Fetch all tweets -
 async function fetchTweets() {
   try {
@@ -53,14 +51,12 @@ async function fetchTweets() {
     allTweets = [];
   }
 }
-
 // стартовые загрузки
 fetchTweets().then(() => fetchData());
 setInterval(() => {
   fetchTweets();
   fetchData();
 }, 3600000); // обновлять каждый час
-
 // - Normalize leaderboard data -
 function normalizeData(json) {
   data = [];
@@ -118,7 +114,6 @@ function normalizeData(json) {
     return { username: base.username, posts, likes, retweets, comments, views };
   }
 }
-
 // - Update totals -
 function updateTotals() {
   const totalPosts = data.reduce((sum, s) => sum + (Number(s.posts) || 0), 0);
@@ -127,7 +122,6 @@ function updateTotals() {
   document.getElementById("total-users").textContent = `Total Users: ${data.length}`;
   document.getElementById("total-views").textContent = `Total Views: ${totalViews}`;
 }
-
 // - Sort, Filter, Render -
 function sortData() {
   data.sort((a, b) => {
@@ -136,12 +130,10 @@ function sortData() {
     return sortOrder === "asc" ? valA - valB : valB - valA;
   });
 }
-
 function filterData() {
   const query = document.getElementById("search").value.toLowerCase();
   return data.filter(item => (item.username || "").toLowerCase().includes(query));
 }
-
 // - SHARE BUTTON FUNCTIONALITY -
 function shareUserOnTwitter(username) {
     const tweetText = `Check out @${username} on the Ritual Community Leaderboard! #RitualCommunity #Leaderboard`;
@@ -151,7 +143,6 @@ function shareUserOnTwitter(username) {
     const twitterIntentUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
     window.open(twitterIntentUrl, '_blank', 'width=600,height=400');
 }
-
 // - Render Table with Share Button -
 function renderTable() {
   const tbody = document.getElementById("leaderboard-body");
@@ -199,7 +190,6 @@ function renderTable() {
   // Добавляем обработчики клика
   addUserClickHandlers();
 }
-
 // - Escaping HTML -
 function escapeHtml(str) {
   // Обеспечиваем, что str - строка, прежде чем обрабатывать
@@ -211,7 +201,6 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-
 // - Sorting headers -
 function updateSort(key) {
   if (sortKey === key) sortOrder = sortOrder === "asc" ? "desc" : "asc";
@@ -220,7 +209,6 @@ function updateSort(key) {
   renderTable();
   updateArrows();
 }
-
 function updateArrows() {
   document.querySelectorAll(".sort-arrow").forEach(el => el.textContent = "");
   const active = document.querySelector(`#${sortKey}-header .sort-arrow`) || document.querySelector(`#${sortKey}-col-header .sort-arrow`);
@@ -230,23 +218,19 @@ function updateArrows() {
   const headerEl = document.getElementById(headerId);
   if (headerEl) headerEl.classList.add("active");
 }
-
 // - Pagination -
 document.getElementById("prev-page").onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
 document.getElementById("next-page").onclick = () => {
   const total = Math.ceil(filterData().length / perPage);
   if (currentPage < total) { currentPage++; renderTable(); }
 };
-
 // - Search -
 document.getElementById("search").addEventListener("input", () => { currentPage = 1; renderTable(); });
-
 // - Sorting headers click -
 ["posts","likes","retweets","comments","views"].forEach(key => {
   const el = document.getElementById(key === "views" ? "views-col-header" : key+"-header");
   if(el) el.addEventListener("click", () => updateSort(key));
 });
-
 // - Time filter -
 document.getElementById("time-select").addEventListener("change", e => {
   timeFilter = e.target.value || "all";
@@ -256,7 +240,6 @@ document.getElementById("time-select").addEventListener("change", e => {
   renderTable();
   updateTotals();
 });
-
 // - Отображение твитов при клике на пользователя -
 function showTweets(username) {
     const container = document.getElementById("tweets-list");
@@ -279,7 +262,6 @@ function showTweets(username) {
         container.appendChild(li);
     });
 }
-
 // - Добавляем обработчики клика на строки таблицы после рендера -
 function addUserClickHandlers() {
     const tbody = document.getElementById("leaderboard-body");
@@ -290,7 +272,6 @@ function addUserClickHandlers() {
         });
     });
 }
-
 // - Создание аккордеона твитов -
 function toggleTweetsRow(tr, username) {
     // Если уже есть раскрытая строка под этим пользователем — удаляем её
@@ -330,35 +311,157 @@ function toggleTweetsRow(tr, username) {
     tweetsRow.appendChild(td);
     tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
 }
+// --- ОБНОВЛЁННАЯ ФУНКЦИЯ toggleTweetsRow С ГИСТОГРАММОЙ ---
 function toggleTweetsRow(tr, username) {
   const nextRow = tr.nextElementSibling;
   const isAlreadyOpen = nextRow && nextRow.classList.contains("tweets-row") &&
                         nextRow.dataset.username === username;
+
   // Убираем все предыдущие аккордеоны и подсветку
   document.querySelectorAll(".tweets-row").forEach(row => row.remove());
   document.querySelectorAll("tbody tr").forEach(row => row.classList.remove("active-row"));
+
   // Если уже был открыт — просто закрывает
   if (isAlreadyOpen) return;
+
   // Подсветить текущую строку
   tr.classList.add("active-row");
+
   const tweetsRow = document.createElement("tr");
   tweetsRow.classList.add("tweets-row");
   tweetsRow.dataset.username = username; // <-- важно для проверки дубликатов
   const td = document.createElement("td");
   td.colSpan = 6;
+  td.style.background = "#1a1d23"; // Цвет фона, как у остальной части сайта
+  td.style.padding = "10px";
+  td.style.verticalAlign = "top"; // Выравнивание содержимого по верху
+
+  // --- НОВЫЙ КОД: Подготовка данных для графика ---
   const userTweets = allTweets.filter(tweet => {
     const candidate = (tweet.user?.screen_name || tweet.user?.name || "").toLowerCase();
     return candidate.replace(/^@/, "") === username.toLowerCase().replace(/^@/, "");
   });
+
+  // Подготовим данные для постов в день
+  const postsByDate = {}; // ключ: YYYY-MM-DD, значение: count
+  const now = new Date();
+  // Опционально: ограничить последние 30 днями
+  // const cutoffDate = new Date();
+  // cutoffDate.setDate(now.getDate() - 30);
+
+  userTweets.forEach(tweet => {
+    const created = tweet.created_at || tweet.tweet_created_at || tweet.created || null;
+    if (!created) return;
+    const d = new Date(created);
+    if (isNaN(d)) return;
+    // Опциональная фильтрация по дате
+    // if (d < cutoffDate) return;
+    const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
+    postsByDate[dateStr] = (postsByDate[dateStr] || 0) + 1;
+  });
+
+  // Подготовим данные для Chart.js
+  const sortedDates = Object.keys(postsByDate).sort(); // Сортировка по дате
+  const labels = sortedDates;
+  const data = sortedDates.map(date => postsByDate[date]);
+
+  // --- НОВЫЙ КОД: Создание контейнера и canvas для графика ---
+  const chartContainer = document.createElement("div");
+  chartContainer.style.width = "100%";
+  chartContainer.style.height = "150px"; // Высота графика
+  chartContainer.style.marginBottom = "15px";
+  chartContainer.style.border = "1px solid #2F4F4F"; // Стиль рамки
+  chartContainer.style.borderRadius = "5px"; // Скругление углов
+  chartContainer.style.padding = "5px";
+
+  const chartCanvas = document.createElement("canvas");
+  chartContainer.appendChild(chartCanvas);
+
+  // --- НОВЫЙ КОД: Инициализация Chart.js ---
+  // Уничтожаем предыдущий график, если он был (на случай повторного открытия)
+  // (Можно добавить, если планируется переключать часто)
+  // if (window.currentChartInstance) {
+  //     window.currentChartInstance.destroy();
+  // }
+
+  const ctx = chartCanvas.getContext('2d');
+  const userChart = new Chart(ctx, {
+    type: 'bar', // или 'line', как вам больше нравится
+    data: {
+      labels: labels,
+      datasets: [{
+        label: currentLang === 'en' ? 'Posts per Day' : 'Постов в день',
+        data: data,
+        borderColor: '#6fe3d1', // Цвет линии/границ столбцов
+        backgroundColor: 'rgba(111, 227, 209, 0.2)', // Цвет заливки столбцов
+        borderWidth: 1,
+        barPercentage: 0.8, // Ширина столбца
+        categoryPercentage: 0.9
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false, // Важно для фиксированной высоты
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: 'white' // Цвет текста легенды
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: ${context.parsed.y}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: 'white', // Цвет меток оси X
+            maxRotation: 45, // Поворот меток, если длинные даты
+            minRotation: 0
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)' // Цвет сетки
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: 'white' // Цвет меток оси Y
+          },
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)' // Цвет сетки
+          }
+        }
+      }
+    }
+  });
+
+  // --- КОНЕЦ НОВОГО КОДА ---
+
+  // Добавляем контейнер с графиком в td
+  td.appendChild(chartContainer);
+
+  // --- СТАРЫЙ КОД: Отображение постов ---
   if (userTweets.length === 0) {
-    td.innerHTML = "<i style='color:#aaa;'>У пользователя нет постов</i>";
+    const noPostsText = document.createElement("div");
+    noPostsText.textContent = currentLang === 'en' ? "User has no posts" : "У пользователя нет постов";
+    noPostsText.style.color = "#aaa";
+    noPostsText.style.fontStyle = "italic";
+    td.appendChild(noPostsText);
   } else {
     const container = document.createElement("div");
     container.classList.add("tweet-container");
     userTweets.forEach(tweet => {
       const content = tweet.full_text || tweet.text || tweet.content || "";
       const url = tweet.url || (tweet.id_str ? `https://twitter.com/${username}/status/${tweet.id_str}` : "#");
-      // формат даты
+
       let dateRaw = tweet.created_at || tweet.tweet_created_at || "";
       let date = "";
       if (dateRaw) {
@@ -367,34 +470,37 @@ function toggleTweetsRow(tr, username) {
           ? parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
           : dateRaw.split(" ")[0];
       }
-      // media без дубликатов
+
       const mediaList = tweet.extended_entities?.media || tweet.entities?.media || tweet.media || [];
       const uniqueMediaUrls = [...new Set(mediaList.map(m => m.media_url_https || m.media_url).filter(Boolean))];
-      let imgTag = uniqueMediaUrls.map(url => `<img src="${url}">`).join("");
-      // fallback на ссылки в тексте
+      let imgTag = uniqueMediaUrls.map(url => `<img src="${url}" style="max-width: 100px; max-height: 100px; margin: 2px;">`).join("");
+
       if (!imgTag) {
         const match = content.match(/https?:\/\/\S+\.(jpg|jpeg|png|gif|webp)/i);
-        if (match) imgTag = `<img src="${match[0]}">`;
+        if (match) imgTag = `<img src="${match[0]}" style="max-width: 100px; max-height: 100px; margin: 2px;">`;
       }
-      // создаём карточку
+
       const card = document.createElement("div");
       card.classList.add("tweet-card");
       const wordCount = content.trim().split(/\s+/).length;
       if (wordCount <= 3 && !imgTag) card.classList.add("short");
       card.innerHTML = `
-        <a href="${url}" target="_blank" style="text-decoration:none; color:inherit;">
-          <p>${escapeHtml(content)}</p>
+        <a href="${url}" target="_blank" style="text-decoration:none; color:inherit; display: block; margin-bottom: 8px; padding: 8px; border: 1px solid #2F4F4F; border-radius: 5px;">
+          <p style="margin: 0 0 5px 0; font-size: 14px;">${escapeHtml(content)}</p>
           ${imgTag}
-          <div class="tweet-date">${date}</div>
+          <div class="tweet-date" style="font-size: 12px; color: #aaa;">${date}</div>
         </a>
       `;
       container.appendChild(card);
     });
     td.appendChild(container);
   }
+  // --- КОНЕЦ СТАРОГО КОДА ---
+
   tweetsRow.appendChild(td);
   tr.parentNode.insertBefore(tweetsRow, tr.nextElementSibling);
 }
+// --- КОНЕЦ ОБНОВЛЁННОЙ ФУНКЦИИ ---
 
 // - Обновляем обработчики клика -
 function addUserClickHandlers() {
@@ -406,9 +512,7 @@ function addUserClickHandlers() {
         });
     });
 }
-
 // - renderTable остаётся как раньше, addUserClickHandlers вызывается в конце -
-
 // - Tabs setup and Analytics rendering -
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -429,7 +533,6 @@ function setupTabs() {
     });
   });
 }
-
 // - Функция для отрисовки тепловой гистограммы -
 function renderHeatmap(tweets) {
   const container = document.getElementById('heatmap-container');
@@ -474,7 +577,6 @@ ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day]}, ${hour}:00 UTC`;
     }
   }
 }
-
 // - Функция для скачивания файла -
 function downloadFile(filename, content, mimeType = 'text/plain') {
   const blob = new Blob([content], { type: mimeType });
@@ -487,7 +589,6 @@ function downloadFile(filename, content, mimeType = 'text/plain') {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
 // - Функция экспорта в CSV -
 function exportToCSV() {
   const users = window._analyticsFilteredData?.users || {};
@@ -498,17 +599,16 @@ function exportToCSV() {
   for (const [username, stats] of Object.entries(users)) {
     rows.push([username, stats.posts, stats.likes, stats.views].map(v => `"${v}"`).join(','));
   }
-  const csvContent = rows.join('\n');
+  const csvContent = rows.join('
+');
   downloadFile('leaderboard-export.csv', csvContent, 'text/csv');
 }
-
 // - Функция экспорта в JSON -
 function exportToJSON() {
   const data = window._analyticsFilteredData || {};
   const jsonContent = JSON.stringify(data, null, 2);
   downloadFile('leaderboard-export.json', jsonContent, 'application/json');
 }
-
 // - Функция привязки кнопок экспорта -
 function bindExportButtons() {
   const csvBtn = document.getElementById('export-csv');
@@ -530,7 +630,6 @@ function bindExportButtons() {
     jsonBtn._bound = true;
   }
 }
-
 function renderAnalytics() {
   // Filter tweets by the selected analytics period
   let tweets = Array.isArray(allTweets) ? allTweets : [];
@@ -702,7 +801,7 @@ try {
           labels: labels,
           datasets: [{
             label: 'Tweets per day',
-             counts,
+            data: counts,
             fill: false, // Не заполнять область под линией
             borderColor: '#ffffff', // Цвет линии - белый
             borderWidth: 2, // Толщина линии
@@ -776,7 +875,6 @@ try {
   renderHeatmap(tweets);
   bindExportButtons();
 }
-
 // Analytics time period filter
 const analyticsTimeSelect = document.getElementById('analytics-time-select');
 if (analyticsTimeSelect) {
@@ -785,7 +883,6 @@ if (analyticsTimeSelect) {
     renderAnalytics();
   });
 }
-
 // - НОВЫЙ ОБРАБОТЧИК: Фильтр по часам -
 const hourSelect = document.getElementById('hour-select');
 if (hourSelect) {
@@ -795,7 +892,6 @@ if (hourSelect) {
     });
 }
 // - КОНЕЦ НОВОГО ОБРАБОТЧИКА -
-
 // Nested analytics tabs setup
 function setupAnalyticsTabs() {
   const btns = document.querySelectorAll('.analytics-tab-btn');
@@ -812,18 +908,14 @@ function setupAnalyticsTabs() {
     });
   });
 }
-
 // Инициализация табов
 try { setupTabs(); setupAnalyticsTabs(); } catch(e) { console.warn('Tabs init failed', e); }
-
 // === LANGUAGE SWITCHER ===
 // Глобальная переменная currentLang объявлена в начале
-
 function setLanguage(lang) {
     currentLang = lang;
     // Сохраняем язык в localStorage
     localStorage.setItem('lang', lang);
-
     // Обновляем активные классы кнопок переключателя
     const langEn = document.getElementById('lang-en');
     const langRu = document.getElementById('lang-ru');
@@ -835,29 +927,21 @@ function setLanguage(lang) {
         langRu.classList.toggle('active', lang === 'ru');
         langRu.classList.toggle('inactive', lang !== 'ru'); // Опционально для стилей
     }
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА В .welcome-section ---
     const h1 = document.getElementById('welcome-title');
     if (h1) h1.textContent = lang === 'en' ? 'WELCOME RITUALISTS!' : 'ДОБРО ПОЖАЛОВАТЬ, РИТУАЛИСТЫ!';
-
     const welcomeP1 = document.getElementById('welcome-desc-1');
     if (welcomeP1) welcomeP1.innerHTML = lang === 'en' ? 'This leaderboard is generated based on all posts in the <a href="https://x.com/i/communities/1896991026272723220" target="_blank">Ritual Community</a>.' : 'Этот список лидеров генерируется на основе всех постов в <a href="https://x.com/i/communities/1896991026272723220" target="_blank">сообществе Ritual</a>.';
-
     const welcomeP2 = document.getElementById('welcome-desc-2');
     if (welcomeP2) welcomeP2.innerHTML = lang === 'en' ? 'If your posts are not published through <a href="https://x.com/i/communities/1896991026272723220" target="_blank">Ritual Community</a>, they will not be visible on the leaderboard.' : 'Если ваши посты опубликованы не через <a href="https://x.com/i/communities/1896991026272723220" target="_blank">сообщество Ritual</a>, они не будут видны в списке лидеров.';
-
     const welcomeP3 = document.getElementById('welcome-desc-3');
     if (welcomeP3) welcomeP3.textContent = lang === 'en' ? 'By clicking on any participant, you can view their works directly on the website.' : 'Нажав на любого участника, вы можете просмотреть его работы непосредственно на веб-сайте.';
-
     const welcomeP4 = document.getElementById('welcome-desc-4');
     if (welcomeP4) welcomeP4.textContent = lang === 'en' ? 'By clicking on any metric (for example, views), you can filter by it.' : 'Нажав на любую метрику (например, просмотры), вы можете отфильтровать по ней.';
-
     const updateInfoP = document.getElementById('last-updated-static');
     if (updateInfoP) updateInfoP.textContent = lang === 'en' ? 'Updated every 2 days' : 'Обновляется каждые 2 дня';
-
     const supportP = document.getElementById('support-us');
     if (supportP) supportP.textContent = lang === 'en' ? 'Support us on Twitter!' : 'Поддержите нас в Twitter!';
-
     // --- ИСПРАВЛЕНИЕ: Обновление текста и стилей для блока "Follow Developer" ---
     const followDevTextElement = document.getElementById('follow-dev-text');
     const followDevLinkElement = document.getElementById('follow-dev-link');
@@ -881,7 +965,6 @@ function setLanguage(lang) {
         lastUpdatedLabel.textContent = lang === 'en' ? 'Last updated:' : 'Последнее обновление:';
     }
     // --- КОНЕЦ ОБНОВЛЕНИЯ ТЕКСТА "Last updated:" ---
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА В ФИЛЬТРАХ И ЭЛЕМЕНТАХ LEADERBOARD ---
     const timeSelectOptions = document.querySelectorAll('#time-select option');
     if (timeSelectOptions.length >= 4) {
@@ -890,27 +973,20 @@ function setLanguage(lang) {
         timeSelectOptions[2].textContent = lang === 'en' ? 'Last 30 days' : 'Последние 30 дней';
         timeSelectOptions[3].textContent = lang === 'en' ? 'All time' : 'За всё время';
     }
-
     const searchInput = document.getElementById('search');
     if (searchInput) searchInput.placeholder = lang === 'en' ? 'Type @handle or part of name...' : 'Введите @ник или часть имени...'; // Обновлено
-
     const prevPageBtn = document.getElementById('prev-page');
     if (prevPageBtn) prevPageBtn.textContent = lang === 'en' ? 'Previous' : 'Предыдущая'; // Обновлено
-
     const nextPageBtn = document.getElementById('next-page');
     if (nextPageBtn) nextPageBtn.textContent = lang === 'en' ? 'Next' : 'Следующая'; // Обновлено
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА ВО ВКЛАДКАХ ---
     const leaderboardTabBtn = document.getElementById('tab-leaderboard-btn');
     if (leaderboardTabBtn) leaderboardTabBtn.textContent = lang === 'en' ? 'Leaderboard' : 'Лидерборд';
-
     const analyticsTabBtn = document.getElementById('tab-analytics-btn');
     if (analyticsTabBtn) analyticsTabBtn.textContent = lang === 'en' ? 'Analytics' : 'Аналитика';
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА В ANALYTICS ---
     const analyticsH2 = document.getElementById('analytics-title');
     if (analyticsH2) analyticsH2.textContent = lang === 'en' ? 'Analytics' : 'Аналитика';
-
     const analyticsTimeOptions = document.querySelectorAll('#analytics-time-select option');
     if (analyticsTimeOptions.length >= 4) {
         analyticsTimeOptions[0].textContent = lang === 'en' ? 'All time' : 'За всё время';
@@ -918,14 +994,11 @@ function setLanguage(lang) {
         analyticsTimeOptions[2].textContent = lang === 'en' ? 'Last 14 days' : 'Последние 14 дней';
         analyticsTimeOptions[3].textContent = lang === 'en' ? 'Last 7 days' : 'Последние 7 дней';
     }
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА LABEL И ОПЦИЙ ДЛЯ ФИЛЬТРА ПО ЧАСАМ ---
     const analyticsTimeLabel = document.getElementById('analytics-time-label');
     if (analyticsTimeLabel) analyticsTimeLabel.textContent = lang === 'en' ? 'Filter by time:' : 'Фильтровать по времени:';
-
     const hourLabel = document.getElementById('hour-label');
     if (hourLabel) hourLabel.textContent = lang === 'en' ? 'Filter by hour:' : 'Фильтровать по часу:';
-
     const hourSelectOptions = document.querySelectorAll('#hour-select option');
     if (hourSelectOptions.length >= 25) { // Проверяем, что есть опции "All hours" и "0"-"23"
         hourSelectOptions[0].textContent = lang === 'en' ? 'All hours' : 'Все часы';
@@ -937,22 +1010,16 @@ function setLanguage(lang) {
         }
     }
     // --- КОНЕЦ ОБНОВЛЕНИЯ ТЕКСТА LABEL И ОПЦИЙ ДЛЯ ФИЛЬТРА ПО ЧАСАМ ---
-
     const avgMetricsBtn = document.getElementById('analytics-tab-averages');
     if (avgMetricsBtn) avgMetricsBtn.textContent = lang === 'en' ? 'Avg metrics' : 'Средние метрики';
-
     const topAuthorsBtn = document.getElementById('analytics-tab-authors');
     if (topAuthorsBtn) topAuthorsBtn.textContent = lang === 'en' ? 'Top 10 authors' : 'Топ 10 авторов';
-
     const topPostsBtn = document.getElementById('analytics-tab-posts');
     if (topPostsBtn) topPostsBtn.textContent = lang === 'en' ? 'Top 10 posts' : 'Топ 10 постов';
-
     const exportCsvBtn = document.getElementById('export-csv-btn');
     if (exportCsvBtn) exportCsvBtn.textContent = lang === 'en' ? 'Export CSV' : 'Экспорт CSV';
-
     const exportJsonBtn = document.getElementById('export-json-btn');
     if (exportJsonBtn) exportJsonBtn.textContent = lang === 'en' ? 'Export JSON' : 'Экспорт JSON';
-
     // --- ОБНОВЛЕНИЕ ЗАГОЛОВКОВ ТАБЛИЦЫ ---
     const headers = {
         'name-header': { en: 'User', ru: 'Пользователь' },
@@ -966,7 +1033,6 @@ function setLanguage(lang) {
         const el = document.getElementById(id);
         if (el) el.textContent = texts[lang];
     });
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА ФИЛЬТРОВ В ANALYTICS ---
     const authorMetricOptions = document.querySelectorAll('#author-metric-select option');
     if (authorMetricOptions.length >= 3) {
@@ -974,32 +1040,24 @@ function setLanguage(lang) {
         authorMetricOptions[1].textContent = lang === 'en' ? 'Likes' : 'Лайки';
         authorMetricOptions[2].textContent = lang === 'en' ? 'Views' : 'Просмотры';
     }
-
     const postMetricOptions = document.querySelectorAll('#post-metric-select option');
     if (postMetricOptions.length >= 2) {
         postMetricOptions[0].textContent = lang === 'en' ? 'Likes' : 'Лайки';
         postMetricOptions[1].textContent = lang === 'en' ? 'Views' : 'Просмотры';
     }
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА ЭЛЕМЕНТОВ ВЛОЖЕННЫХ РАЗДЕЛОВ ANALYTICS ---
     const avgMetricsH3 = document.getElementById('analytics-averages-title');
     if (avgMetricsH3) avgMetricsH3.textContent = lang === 'en' ? 'Average metrics per user' : 'Средние метрики на пользователя';
-
     const heatmapH3 = document.getElementById('heatmap-title');
     if (heatmapH3) heatmapH3.textContent = lang === 'en' ? 'Activity Heatmap (Tweets by Day & Hour)' : 'Тепловая карта активности (Твиты по дням и часам)';
-
     const topAuthorsH3 = document.getElementById('top-authors-title');
     if (topAuthorsH3) topAuthorsH3.textContent = lang === 'en' ? 'Top 10 authors' : 'Топ 10 авторов';
-
     const topPostsH3 = document.getElementById('top-posts-title');
     if (topPostsH3) topPostsH3.textContent = lang === 'en' ? 'Top 10 posts' : 'Топ 10 постов';
-
     const sortLabel1 = document.getElementById('author-metric-label');
     if (sortLabel1) sortLabel1.textContent = lang === 'en' ? 'Sort by:' : 'Сортировать по:';
-
     const sortLabel2 = document.getElementById('post-metric-label');
     if (sortLabel2) sortLabel2.textContent = lang === 'en' ? 'Sort by:' : 'Сортировать по:';
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА В БЛОКАХ СТАТИСТИКИ ---
     // Функция обновления текста в блоках статистики (Total Posts, Avg Posts и т.д.)
     // Извлекаем числовые значения перед обновлением текста
@@ -1040,15 +1098,12 @@ function setLanguage(lang) {
         const value = currentText.split(': ')[1] || '0.00';
         avgViewsEl.textContent = lang === 'en' ? `Avg Views: ${value}` : `Среднее Просмотров: ${value}`;
     }
-
     // --- ОБНОВЛЕНИЕ ТЕКСТА МЕТОК ПОИСКА И ФИЛЬТРАЦИИ ---
     const searchLabel = document.getElementById('search-label');
     if (searchLabel) searchLabel.textContent = lang === 'en' ? 'SEARCH USER' : 'ПОИСК ПОЛЬЗОВАТЕЛЯ';
-
     const filterLabel = document.getElementById('filter-label');
     if (filterLabel) filterLabel.textContent = lang === 'en' ? 'FILTER BY TIME:' : 'ФИЛЬТРОВАТЬ ПО ВРЕМЕНИ:';
 }
-
 // --- ОБНОВЛЕНИЕ ПОДСКАЗКИ КНОПКИ "ПОДЕЛИТЬСЯ" В renderTable ---
 // Найдите функцию renderTable и измените строку с shareBtn.title следующим образом:
 /*
@@ -1061,7 +1116,6 @@ shareBtn.title = currentLang === 'en' ? `Share ${escapeHtml(name)}'s stats on Tw
 // ...
 */
 // Эта строка уже внесена в renderTable выше.
-
 // --- ОБРАБОТЧИКИ КЛИКОВ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ЯЗЫКА ---
 document.addEventListener('DOMContentLoaded', () => {
     const langEn = document.getElementById('lang-en');
@@ -1092,7 +1146,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setLanguage('en');
     }
 });
-
 // === SNOW EFFECT INITIALIZATION ===
 document.addEventListener('DOMContentLoaded', () => {
     const snowContainer = document.getElementById('snowContainer');
@@ -1139,4 +1192,3 @@ document.addEventListener('DOMContentLoaded', () => {
         // Для базового эффекта пересчёт не обязателен.
     });
 });
-
