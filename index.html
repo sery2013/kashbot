@@ -91,6 +91,29 @@
             font-size: 2rem; /* Увеличивает размер заголовка */
             text-align: center; /* Заголовок можно оставить по центру, как акцент */
         }
+
+        /* === НОВЫЕ СТИЛИ ДЛЯ ФИКСАЦИИ ШИРИНЫ ТАБЛИЦЫ === */
+        .leaderboard-table {
+            width: 100% !important;
+            table-layout: fixed !important; /* Фиксирует ширину столбцов */
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            word-wrap: break-word; /* Перенос слов */
+            overflow: hidden;      /* Скрытие переполнения */
+            text-overflow: ellipsis; /* Троеточие для переполнения */
+            padding: 8px 12px !important;
+            border: none !important; /* Убираем границы */
+        }
+
+        /* Фиксированная ширина столбцов */
+        .leaderboard-table .user-col { width: 20%; }
+        .leaderboard-table .posts-col { width: 15%; }
+        .leaderboard-table .likes-col { width: 15%; }
+        .leaderboard-table .retweets-col { width: 15%; }
+        .leaderboard-table .comments-col { width: 15%; }
+        .leaderboard-table .views-col { width: 20%; }
     </style>
 </head>
 <body>
@@ -161,15 +184,15 @@
             </div>
 
             <!-- Таблица лидеров -->
-            <table id="leaderboard">
+            <table id="leaderboard" class="leaderboard-table"> <!-- Добавлен класс -->
                 <thead>
                     <tr>
-                        <th id="name-header">User</th>
-                        <th id="posts-header">Posts <span class="sort-arrow">▲</span></th>
-                        <th id="likes-header">Likes <span class="sort-arrow"></span></th>
-                        <th id="retweets-header">Retweets <span class="sort-arrow"></span></th>
-                        <th id="comments-header">Comments <span class="sort-arrow"></span></th>
-                        <th id="views-col-header">Views <span class="sort-arrow"></span></th>
+                        <th class="user-col" id="name-header">User</th> <!-- Добавлен класс -->
+                        <th class="posts-col" id="posts-header">Posts <span class="sort-arrow">▲</span></th> <!-- Добавлен класс -->
+                        <th class="likes-col" id="likes-header">Likes <span class="sort-arrow"></span></th> <!-- Добавлен класс -->
+                        <th class="retweets-col" id="retweets-header">Retweets <span class="sort-arrow"></span></th> <!-- Добавлен класс -->
+                        <th class="comments-col" id="comments-header">Comments <span class="sort-arrow"></span></th> <!-- Добавлен класс -->
+                        <th class="views-col" id="views-col-header">Views <span class="sort-arrow"></span></th> <!-- Добавлен класс -->
                     </tr>
                 </thead>
                 <tbody id="leaderboard-body"></tbody>
@@ -324,4 +347,3 @@
  
 </body>
 </html>
-
