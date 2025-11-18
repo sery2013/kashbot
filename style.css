@@ -12,7 +12,7 @@ body {
 .background {
   position: fixed;
   inset: 0;
-  background: url("https://i.imgur.com/whGwSLM.png") no-repeat center center / cover;
+  background: url("https://i.imgur.com/A5tFcTc.png") no-repeat center center / cover;
   z-index: -1;
   filter: brightness(0.35) blur(2px);
 }
@@ -1627,5 +1627,6 @@ a:link, a:visited {
 * {
   border-radius: 8px !important; /* или 2px, если хотите чуть больше */
 }
+
 
 
