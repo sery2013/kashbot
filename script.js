@@ -262,9 +262,12 @@ function updateTotals() {
   const totalViews = data.reduce((sum, s) => sum + (Number(s.views) || 0), 0);
   // Обновляем текст, сохраняя ключ для перевода
   // ВАЖНО: используем langData[currentLang] для получения текста до ":"
-  document.getElementById("total-posts").textContent = `${langData[currentLang]['total-posts']}: ${totalPosts}`;
-  document.getElementById("total-users").textContent = `${langData[currentLang]['total-users']}: ${data.length}`;
-  document.getElementById("total-views").textContent = `${langData[currentLang]['total-views']}: ${totalViews}`;
+  const totalPostsEl = document.getElementById("total-posts");
+  const totalUsersEl = document.getElementById("total-users");
+  const totalViewsEl = document.getElementById("total-views");
+  if (totalPostsEl) totalPostsEl.textContent = `${langData[currentLang]['total-posts']}: ${totalPosts}`;
+  if (totalUsersEl) totalUsersEl.textContent = `${langData[currentLang]['total-users']}: ${data.length}`;
+  if (totalViewsEl) totalViewsEl.textContent = `${langData[currentLang]['total-views']}: ${totalViews}`;
 }
 
 // - Sort, Filter, Render -
