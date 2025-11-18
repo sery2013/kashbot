@@ -1627,21 +1627,14 @@ a:link, a:visited {
   table-layout: fixed !important; /* Важно! Фиксирует ширину столбцов */
 }
 
-/* Фиксируем ширину каждого столбца (можно подстроить под нужные пропорции) */
-.leaderboard-table th,
+/* Фиксируем скругление для всех ячеек таблицы */
 .leaderboard-table td {
-  word-wrap: break-word; /* Перенос длинных слов */
-  overflow: hidden;      /* Скрываем переполнение */
-  text-overflow: ellipsis; /* Троеточие для переполнения */
-  padding: 8px 12px !important;
-  border: none !important; /* Убираем границы, если нужно */
+  border-radius: 0 !important; /* Убираем скругление полностью */
+  /* ИЛИ, если хотите немного скругления, установите значение, например: */
+  /* border-radius: 4px !important; */
 }
 
-/* Если есть конкретные классы для столбцов, можно задать им фиксированную ширину */
-.leaderboard-table .user-col { width: 20%; }
-.leaderboard-table .posts-col { width: 15%; }
-.leaderboard-table .likes-col { width: 15%; }
-.leaderboard-table .retweets-col { width: 15%; }
-.leaderboard-table .comments-col { width: 15%; }
-.leaderboard-table .views-col { width: 20%; }
-
+/* Если скругление добавляется только к активной строке, используйте: */
+.leaderboard-table tr.active-row td {
+  border-radius: 0 !important;
+}
