@@ -1597,7 +1597,16 @@ select option:checked {
 }
 
 
+/* Это правило будет иметь тот же приоритет, что и a:link, a:visited */
 a {
-    color: white;
+    color: white !important; /* !important принудительно устанавливает цвет */
     text-decoration: underline; /* Опционально: добавляет подчеркивание */
 }
+
+/* ИЛИ, если вы хотите переопределить конкретно a:link и a:visited: */
+/*
+a:link, a:visited {
+    color: white !important;
+    text-decoration: underline;
+}
+*/
