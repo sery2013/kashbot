@@ -11,7 +11,7 @@ let analyticsChart = null;
 let analyticsPeriod = "all"; // filter for analytics: 'all', '7', '14', '30'
 let analyticsHourFilter = "all"; // filter for heatmap hour: 'all', '0', '1', ... '23'
 
-// === LANGUAGE SWITCHER ===
+// === LANGUAGE SWITCHER (НОВАЯ СИСТЕМА) ===
 // --- 1. Определяем глобальную переменную currentLang ---
 let currentLang = 'en'; // Язык по умолчанию
 
@@ -157,7 +157,7 @@ async function fetchData() {
     sortData();
     renderTable();
     updateArrows();
-    updateTotals();
+    updateTotals(); // Обновляем статистику после загрузки данных
   } catch (err) {
     console.error("Failed to fetch leaderboard:", err);
   }
@@ -261,6 +261,7 @@ function updateTotals() {
   const totalPosts = data.reduce((sum, s) => sum + (Number(s.posts) || 0), 0);
   const totalViews = data.reduce((sum, s) => sum + (Number(s.views) || 0), 0);
   // Обновляем текст, сохраняя ключ для перевода
+  // ВАЖНО: используем langData[currentLang] для получения текста до ":"
   document.getElementById("total-posts").textContent = `${langData[currentLang]['total-posts']}: ${totalPosts}`;
   document.getElementById("total-users").textContent = `${langData[currentLang]['total-users']}: ${data.length}`;
   document.getElementById("total-views").textContent = `${langData[currentLang]['total-views']}: ${totalViews}`;
@@ -401,7 +402,7 @@ document.getElementById("time-select").addEventListener("change", e => {
   normalizeData(rawData);
   sortData();
   renderTable();
-  updateTotals();
+  updateTotals(); // Обновляем статистику при изменении фильтра времени
 });
 
 // - Отображение твитов при клике на пользователя -
@@ -1002,7 +1003,7 @@ function setupAnalyticsTabs() {
   });
 }
 
-// --- 4. Обработчики кликов для переключения языка ---
+// --- 4. Обработчики кликов для переключения языка (НОВАЯ СИСТЕМА) ---
 document.addEventListener('DOMContentLoaded', () => {
     const langEn = document.getElementById('lang-en');
     const langRu = document.getElementById('lang-ru');
