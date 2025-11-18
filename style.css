@@ -1621,19 +1621,11 @@ a:link, a:visited {
   color: #fff !important;
 } */
 
-/* Фиксируем скругление для блока с твитами */
-#tweets-container {
-  border-radius: 0 !important; /* Убираем скругление полностью */
-  /* ИЛИ, если хотите небольшое скругление, установите значение, например: */
-  /* border-radius: 8px !important; */
-}
 
-/* Также, если твиты отображаются в списке <ul>, примените стиль к нему */
-#tweets-list {
-  border-radius: 0 !important;
-}
 
-/* Или, если твиты находятся в отдельных <li> элементах */
+/* Принудительно переопределяем скругление для всех блоков */
+#tweets-container,
+#tweets-list,
 #tweets-list li {
   border-radius: 0 !important;
 }
