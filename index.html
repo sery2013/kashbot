@@ -30,47 +30,47 @@
         }
 
         /* === LANGUAGE SWITCHER (в правом верхнем углу) === */
-        .lang-switcher {
-          position: absolute; /* Используем absolute, чтобы точно прижать к углу внутри sticky .centered-banner */
-          top: 10px;
-          right: 10px;
-          z-index: 1001; /* Выше, чем баннер */
-          display: flex;
-          gap: 2px; /* Маленький зазор между кнопками */
-        }
+.lang-switcher {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1001;
+  display: flex;
+  gap: 2px;
+}
 
-        .lang-btn {
-          background: #2F4F4F;
-          color: #aaa; /* Неактивный цвет */
-          border: 1px solid #6fe3d1;
-          border-radius: 5px;
-          padding: 5px 8px;
-          cursor: pointer;
-          font-size: 0.9em;
-          transition: background-color 0.2s, color 0.2s;
-        }
+.lang-btn {
+  background: #e0e0e0; /* Светло-серый фон для неактивной кнопки */
+  color: #000; /* Чёрный текст */
+  border: 1px solid #000; /* Тонкая чёрная обводка */
+  border-radius: 5px;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s, color 0.2s;
+}
 
-        .lang-btn:first-child {
-          border-radius: 5px 0 0 5px; /* Скругление только у левой кнопки */
-        }
+.lang-btn:first-child {
+  border-radius: 5px 0 0 5px;
+}
 
-        .lang-btn:last-child {
-          border-radius: 0 5px 5px 0; /* Скругление только у правой кнопки */
-          border-left: none; /* Убираем левую границу у правой кнопки */
-        }
+.lang-btn:last-child {
+  border-radius: 0 5px 5px 0;
+  border-left: none;
+}
 
-        .lang-btn.active {
-          background: #6fe3d1; /* Цвет активной кнопки */
-          color: #0d1117; /* Цвет текста активной кнопки */
-        }
+.lang-btn.active {
+  background: #333333; /* Тёмно-серый фон для активной кнопки */
+  color: #ffffff; /* Белый текст */
+}
 
-        .lang-btn:hover {
-          background: #4a6b6b; /* Цвет при наведении */
-        }
+.lang-btn:hover {
+  background: #cccccc; /* Средний серый при наведении */
+}
 
-        .lang-btn.active:hover {
-          background: #5bc0bd; /* Цвет активной кнопки при наведении */
-        }
+.lang-btn.active:hover {
+  background: #444444; /* Чуть светлее тёмно-серого при наведении на активную */
+}
 
         /* === СТИЛИ ДЛЯ БЛОКА ПРИВЕТСТВИЯ === */
         .welcome-block {
@@ -333,3 +333,4 @@
  
 </body>
 </html>
+
