@@ -463,11 +463,11 @@ ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][day]}, ${hour}:00 UTC`;
       if (count === 0) {
         cell.style.backgroundColor = 'rgba(255,255,255,0.03)';
       } else {
-        // Цвет от светло-фиолетового к насыщенному (#d0bfff → #5e35b1)
+        // Цвет от светло-серого к тёмно-серому (#cccccc → #333333)
 const intensity = count / (max || 1); // 0..1
-const r = Math.floor(208 * intensity + 255 * (1 - intensity)); // R: 208 -> 255
-const g = Math.floor(191 * intensity + 255 * (1 - intensity)); // G: 191 -> 255
-const b = Math.floor(255 * intensity + 255 * (1 - intensity)); // B: 255 -> 255
+const r = Math.floor(204 * intensity + 51 * (1 - intensity)); // R: 204 -> 51
+const g = Math.floor(204 * intensity + 51 * (1 - intensity)); // G: 204 -> 51
+const b = Math.floor(204 * intensity + 51 * (1 - intensity)); // B: 204 -> 51
 cell.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
       }
       container.appendChild(cell);
@@ -1139,6 +1139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Для базового эффекта пересчёт не обязателен.
     });
 });
+
 
 
 
