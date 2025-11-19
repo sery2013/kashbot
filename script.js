@@ -673,11 +673,11 @@ try {
     } else if (window.Chart) {
       analyticsChart = new Chart(ctx.getContext('2d'), {
         type: 'line', // МЕНЯЕМ тип графика с 'bar' на 'line'
-         {
+        data: {
           labels: labels,
           datasets: [{
             label: 'Tweets per day',
-             data: counts, // --- ИСПРАВЛЕНО: Добавлен ключ 'data' ---
+             counts, // --- ИСПРАВЛЕНО: Добавлен ключ '' ---
             fill: false, // Не заполнять область под линией
             // --- НАЧАЛО ИЗМЕНЕНИЙ: Цвета для желтого фона ---
             borderColor: '#2c2c2c', // Темно-серый цвет для линии
