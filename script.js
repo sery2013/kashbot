@@ -676,9 +676,9 @@ try {
          {
           labels: labels,
           datasets: [{
-            label: 'Tweets per day',
-             counts, // --- ИСПРАВЛЕНО: Добавлен ключ '' ---
-            fill: false, // Не заполнять область под линией
+  label: 'Tweets per day',
+   counts, // <-- ПРАВИЛЬНО: Это корректный сокращённый синтаксис для ' counts' ВНУТРИ объекта datasets[0]
+  fill: false,
             // --- НАЧАЛО ИЗМЕНЕНИЙ: Цвета для желтого фона ---
             borderColor: '#2c2c2c', // Темно-серый цвет для линии
             borderWidth: 2,
@@ -1070,3 +1070,4 @@ document.addEventListener('DOMContentLoaded', () => {
         // Для базового эффекта пересчёт не обязателен.
     });
 });
+
