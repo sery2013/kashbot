@@ -673,7 +673,7 @@ try {
     } else if (window.Chart) {
       analyticsChart = new Chart(ctx.getContext('2d'), {
         type: 'line', // МЕНЯЕМ тип графика с 'bar' на 'line'
-        data: {
+         {
           labels: labels,
           datasets: [{
             label: 'Tweets per day',
