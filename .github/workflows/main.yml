@@ -1,7 +1,7 @@
 name: Update Leaderboard
 
 on:
-
+ 
   workflow_dispatch:
 
 jobs:
@@ -31,6 +31,6 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add . || true # Добавляем все изменённые файлы
+          git add leaderboard.json all_tweets.json || true
           git commit -m "Auto update leaderboard [skip ci]" || echo "No changes"
           git push
