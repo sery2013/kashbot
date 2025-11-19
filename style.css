@@ -139,28 +139,22 @@ body {
   transform: scale(1.03);
 }
 /* === SEARCH BOX === */
-.search-box {
-  margin-bottom: 25px;
-  background: linear-gradient(135deg, #f0c500, #e0b500); /* фон */
-  padding: 10px;
-  border-radius: 7.5%;
-}
 #search {
   width: 60%;
   padding: 10px 15px;
   font-size: 1rem;
-  color: #000; /* изменен цвет текста */
-  background: #f0c500; /* изменен фон */
-  border: 2px solid rgba(0, 0, 0, 0.4); /* изменена обводка */
-  border-radius: 7.5%; /* скругление 5-10% */
+  color: #000; /* Чёрный цвет текста */
+  background: linear-gradient(135deg, #fbd109, #e0b500); /* Градиент с новым жёлтым фоном */
+  border: 2px solid rgba(0, 0, 0, 0.4); /* Тёмная обводка */
+  border-radius: 7.5%; /* Скругление */
   outline: none;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* изменена тень */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Тень */
   transition: all 0.3s ease;
 }
-#search:focus {
-  border-color: #000; /* изменен цвет обводки при фокусе */
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6); /* изменена тень при фокусе */
-  transform: scale(1.02);
+/* --- НОВОЕ ПРАВИЛО: Цвет подсказки --- */
+#search::placeholder {
+  color: #000; /* Чёрный цвет для подсказки */
+  opacity: 0.7; /* Полупрозрачность */
 }
 /* === TABLE === */
 table {
@@ -1453,5 +1447,6 @@ a:link, a:visited {
 * {
   border-radius: 8px !important; /* или 2px, если хотите чуть больше */
 }
+
 
 
