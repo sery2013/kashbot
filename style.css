@@ -13,8 +13,7 @@ body {
   inset: 0;
   background: url("https://i.imgur.com/A5tFcTc.png") no-repeat center center / cover;
   z-index: -1;
-  filter: brightness(0.35) blur(2px);
-  opacity: 1; /* Увеличено до 1 */
+  /* Убраны filter и opacity для полной видимости изображения */
 }
 /* === CENTERED BANNER (1350×100, по центру, кликабельный) === */
 .centered-banner {
@@ -1447,6 +1446,7 @@ a:link, a:visited {
 * {
   border-radius: 8px !important; /* или 2px, если хотите чуть больше */
 }
+
 
 
 
