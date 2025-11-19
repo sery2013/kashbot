@@ -94,16 +94,7 @@
     </style>
 </head>
 <body>
-    <script>
-      fetch("last_updated.txt")
-        .then(response => response.text())
-        .then(text => {
-          document.getElementById("last-updated").textContent = text.trim();
-        })
-        .catch(() => {
-          document.getElementById("last-updated").textContent = "Unknown";
-        });
-    </script>
+    
     <!-- === BANNER (теперь просто обновляет страницу) === -->
     <div class="centered-banner">
         <a href="javascript:location.reload()" class="banner-link"></a>
@@ -333,6 +324,7 @@
  
 </body>
 </html>
+
 
 
 
