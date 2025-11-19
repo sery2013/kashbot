@@ -13,6 +13,8 @@ body {
   inset: 0;
   background: url("https://i.imgur.com/r12rU4b.png") no-repeat center center / cover;
   z-index: -1;
+  opacity: 0.85; /* Добавляем прозрачность. 0.0 = полностью прозрачный, 1.0 = полностью непрозрачный */
+}
   /* Убраны filter и opacity для полной видимости изображения */
 }
 /* === CENTERED BANNER (1350×100, по центру, кликабельный) === */
@@ -1461,6 +1463,7 @@ a:link, a:visited {
 .share-btn svg {
     fill: currentColor; /* Использует цвет текста */
 }
+
 
 
 
