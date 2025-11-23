@@ -858,21 +858,19 @@ if (welcomeP4) welcomeP4.textContent = lang === 'en' ? 'By clicking on any metri
     const supportP = document.getElementById('support-us');
     if (supportP) supportP.textContent = lang === 'en' ? 'Support us on Twitter!' : 'Поддержите нас в Twitter!';
 
-    // --- ИСПРАВЛЕНИЕ: Обновление текста и стилей для блока "Follow Developer" ---
-    const followDevTextElement = document.getElementById('follow-dev-text');
-    const followDevLinkElement = document.getElementById('follow-dev-link');
-    if (followDevTextElement && followDevLinkElement) {
-        // Обновляем текст до ссылки
-        const linkText = followDevLinkElement.textContent; // Сохраняем текст ссылки
-        followDevTextElement.textContent = lang === 'en' ? 'Follow Developer - ' : 'Следите за разработчиком - ';
-        // Восстанавливаем ссылку с правильным текстом и стилями
-        followDevLinkElement.textContent = linkText; // Восстанавливаем текст '@kaye_moni'
-        // Применяем стили к ссылке, как в index.html
-        followDevLinkElement.style.color = 'white';
-        followDevLinkElement.style.textDecoration = 'underline';
-        // Вставляем ссылку обратно внутрь элемента follow-dev-text
-        followDevTextElement.appendChild(followDevLinkElement);
+    // --- ИСПРАВЛЕНИЕ: Безопасное обновление текста с сохранением ссылки ---
+const followDevTextElement = document.getElementById('follow-dev-text');
+if (followDevTextElement) {
+    const link = followDevTextElement.querySelector('a');
+    if (link) {
+        // Очищаем всё, кроме ссылки
+        followDevTextElement.innerHTML = lang === 'en' ? 'Follow Developer - ' : 'Следите за разработчиком - ';
+        followDevTextElement.appendChild(link);
+        // Убеждаемся, что стили ссылки корректны
+        link.style.color = 'white';
+        link.style.textDecoration = 'underline';
     }
+}
     // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
     // --- ОБНОВЛЕНИЕ ТЕКСТА "Last updated:" ---
     const lastUpdatedLabel = document.getElementById('label-last-updated');
@@ -1139,6 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Для базового эффекта пересчёт не обязателен.
     });
 });
+
 
 
 
